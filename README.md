@@ -1,25 +1,35 @@
-# StreamFlow Frontend (React + Vite)
+<div align="center">
+  <img src="logo.png" alt="Stream Flow Logo" width="150" height="150" style="border-radius: 20px;">
+  <h1>Stream Flow - Client</h1>
+  <p>A modern, premium music streaming web application built with React and Vite.</p>
+</div>
 
-This is the frontend client for the StreamFlow application, built with React, Vite, and Tailwind CSS.
+## Overview
+Stream Flow is a sleek and highly dynamic music streaming platform featuring a modern UI with glassmorphism, vibrant gradients, and intuitive navigation. The frontend client integrates with the Stream Flow Backend API to provide user authentication, global search, playlist management, and high-quality audio playback.
 
-## 🚀 Recent Updates & Changelog
+## Tech Stack
+- **Framework:** React + Vite
+- **Styling:** Tailwind CSS
+- **Routing:** React Router v6
+- **State Management:** React Context API (`MusicContext`, `AuthContext`, `ThemeContext`)
+- **Icons:** Lucide React
+- **Forms:** Formik + Yup
+- **HTTP Client:** Axios
 
-### Profile Page & UI Enhancements
-- **Aesthetic Overhaul**: Replaced the previous `.glass-effect` container on the Profile Page with standard solid colors (`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700`). This ensures the profile form perfectly matches the dark/light mode theme established by the Sidebar and Navbar.
-- **Mobile Responsiveness**: On small screens (phones), the profile form now expands to take up the full screen width and height (removing unnecessary padding). The action buttons ("Save Changes" and "Cancel") now stack vertically to provide a better mobile user experience.
-- **Smart Phone Input**: Revamped the phone number input area. Added a dedicated Country Code selector dropdown with flags. The frontend now intelligently parses existing phone numbers, extracts the country code, and gracefully handles the backend's default "No Phone Number" string. It also automatically concatenates the code and number before sending the payload to the backend.
+## Core Features
+- **Global Search:** Spotify-style dropdown search across songs, artists, and albums.
+- **Audio Player:** Persistent audio playback across route transitions.
+- **Library Management:** Users can upload audio, create/manage playlists, and like their favorite tracks.
+- **Profiles:** Dedicated artist pages and public user profiles.
+- **Responsive Design:** Mobile-first approach with fluid layouts and micro-animations.
 
-### Authentication & Security
-- **Route Guards (`ProtectedRoute`)**: Implemented a robust `ProtectedRoute` wrapper component in `App.jsx`. All private routes (`/profile`, `/settings`, `/uploads`, `/favorites`) are now securely guarded.
-- **Auto-Login Prompt**: If an unauthenticated user attempts to visit a protected route, they are immediately redirected to the Home page (`/`), and an `auth:required` event is dispatched. The Navbar listens to this event and automatically opens the "Sign In" modal.
-- **Infinite Loop Fix**: Resolved a critical bug in `AuthContext` where the `auth:logout` event listener would trigger an infinite recursion loop during the logout process.
+## Getting Started
+1. `npm install`
+2. `npm run dev`
 
-### Bug Fixes
-- **Corrupt Image Preview**: Fixed a bug in `Navbar.jsx` where the user's profile image preview would appear corrupted. The frontend now correctly checks if the image URL is a relative path (e.g., `/uploads/profiles/...`) and prepends the backend's API base URL (`VITE_API_BASE_URL` or `http://localhost:5000`) before rendering it.
+## File Structure
+- `/src/components/` - React UI components grouped by feature (e.g., `audioPlayer`, `navbar`, `playlist`)
+- `/src/context/` - Global state providers
+- `/src/hooks/` - Custom React hooks for audio state and playback
+- `/src/utils/` - API utility functions interacting with the backend
 
-## 🛠️ Tech Stack
-- React 18
-- Vite
-- Tailwind CSS
-- React Router DOM
-- React Spinners & Lucide Icons
