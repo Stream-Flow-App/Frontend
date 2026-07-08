@@ -14,18 +14,29 @@ export const useAudioPlayer = (currentSong, volume, onTimeUpdate, onEnded, onErr
             audioRef.current.preload = 'auto'
         }
 
+        const currentAnimationRef = animationRef.current
         return () => {
             if (audioRef.current) {
                 audioRef.current.pause()
                 audioRef.current = null
             }
-            if (animationRef.current) {
-                cancelAnimationFrame(animationRef.current)
+            if (currentAnimationRef) {
+                cancelAnimationFrame(currentAnimationRef)
             }
         }
     }, [])
 
-    // Handle audio events
+    // Use refs for callbacks so event listeners always call the latest version
+    // This prevents stale closures when repeatMode, queueIndex etc. change
+    const onEndedRef = useRef(onEnded)
+    const onTimeUpdateRef = useRef(onTimeUpdate)
+    const onErrorRef = useRef(onError)
+
+    useEffect(() => { onEndedRef.current = onEnded }, [onEnded])
+    useEffect(() => { onTimeUpdateRef.current = onTimeUpdate }, [onTimeUpdate])
+    useEffect(() => { onErrorRef.current = onError }, [onError])
+
+    // Handle audio events - attach ONCE, use refs to always get latest callback
     useEffect(() => {
         const audio = audioRef.current
         if (!audio) return
@@ -33,7 +44,6 @@ export const useAudioPlayer = (currentSong, volume, onTimeUpdate, onEnded, onErr
         const handleLoadedData = () => {
             setIsLoaded(true)
             setIsBuffering(false)
-            audio.volume = volume
         }
 
         const handleLoadStart = () => {
@@ -41,20 +51,20 @@ export const useAudioPlayer = (currentSong, volume, onTimeUpdate, onEnded, onErr
         }
 
         const handleTimeUpdate = () => {
-            if (!isSeekingRef.current && onTimeUpdate) {
-                onTimeUpdate(audio.currentTime, audio.duration)
+            if (!isSeekingRef.current && onTimeUpdateRef.current) {
+                onTimeUpdateRef.current(audio.currentTime, audio.duration)
             }
         }
 
         const handleEnded = () => {
-            if (onEnded) onEnded()
+            if (onEndedRef.current) onEndedRef.current()
         }
 
         const handleError = (e) => {
             console.error('Audio error:', e)
             setIsLoaded(false)
             setIsBuffering(false)
-            if (onError) onError(e)
+            if (onErrorRef.current) onErrorRef.current(e)
         }
 
         const handleSeeking = () => {
@@ -63,8 +73,8 @@ export const useAudioPlayer = (currentSong, volume, onTimeUpdate, onEnded, onErr
 
         const handleSeeked = () => {
             isSeekingRef.current = false
-            if (onTimeUpdate) {
-                onTimeUpdate(audio.currentTime, audio.duration)
+            if (onTimeUpdateRef.current) {
+                onTimeUpdateRef.current(audio.currentTime, audio.duration)
             }
         }
 
@@ -86,14 +96,20 @@ export const useAudioPlayer = (currentSong, volume, onTimeUpdate, onEnded, onErr
             audio.removeEventListener('seeking', handleSeeking)
             audio.removeEventListener('seeked', handleSeeked)
         }
-    }, [volume, onTimeUpdate, onEnded, onError])
+    }, []) // Empty deps — attach once, refs handle the latest callbacks
 
     // Load new song
     useEffect(() => {
         const audio = audioRef.current
         if (!audio || !currentSong) return
 
-        const audioUrl = currentSong.url || currentSong.audioUrl
+        let audioUrl = currentSong.url || currentSong.audioUrl
+        // Prefix relative /uploads/ paths with the backend API base URL
+        // since the files are served by the Express server, not Vite
+        if (audioUrl && audioUrl.startsWith('/uploads/')) {
+            const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
+            audioUrl = `${apiBase}${audioUrl}`
+        }
         if (audio.src !== audioUrl) {
             setIsLoaded(false)
             setIsBuffering(true)
@@ -106,18 +122,23 @@ export const useAudioPlayer = (currentSong, volume, onTimeUpdate, onEnded, onErr
     // Control functions
     const play = useCallback(async () => {
         const audio = audioRef.current
-        if (!audio || !isLoaded) return false
+        if (!audio) return false
 
         try {
             audio.volume = volume
             await audio.play()
             return true
         } catch (error) {
+            // Ignore AbortError caused by React Strict Mode unmounting or intentional pause
+            if (error.name === 'AbortError') {
+                console.log('Play request aborted (usually safe to ignore).')
+                return true // Return true so callers don't falsely revert the playing state
+            }
             console.error('Play error:', error)
             if (onError) onError(error)
             return false
         }
-    }, [isLoaded, volume, onError])
+    }, [volume, onError])
 
     const pause = useCallback(() => {
         const audio = audioRef.current
@@ -197,7 +218,7 @@ export const useAudioControls = (musicState, musicDispatch, audioPlayer) => {
     }
 }
 
-export const useVolumeControl = (initialVolume = 0.6) => {
+export const useVolumeControl = () => {
     const [showVolumeSlider, setShowVolumeSlider] = useState(false)
     const [isMobile, setIsMobile] = useState(false)
     const modalRef = useRef(null)

@@ -10,8 +10,14 @@ import FavoritesPage from "./components/favorites/FavoritesPage"
 import PlaylistPage from "./components/playlist/PlaylistPage"
 import NotFound404 from "./components/404Page/NotFound404"
 import ProfilePage from "./components/profile/ProfilePage"
+import ArtistPage from "./components/profile/ArtistPage"
+import AlbumPage from "./components/album/AlbumPage"
 import SettingsPage from "./components/settings/SettingsPage"
+import ResetPasswordPage from "./components/authentication/ResetPasswordPage"
 import MusicErrorBoundary from "./components/errorBoundary/MusicErrorBoundary"
+import ProtectedRoute from "./components/layout/ProtectedRoute"
+import AdminRoute from "./components/layout/AdminRoute"
+import AdminDashboard from "./components/admin/AdminDashboard"
 import "./index.css"
 
 const router = createBrowserRouter([
@@ -49,33 +55,67 @@ const router = createBrowserRouter([
       { 
         path: 'uploads', 
         element: (
-          <MusicErrorBoundary fallbackMessage="There was an issue loading your uploads">
-            <UploadsPage />
-          </MusicErrorBoundary>
+          <ProtectedRoute>
+            <MusicErrorBoundary fallbackMessage="There was an issue loading your uploads">
+              <UploadsPage />
+            </MusicErrorBoundary>
+          </ProtectedRoute>
         ) 
       },
       { 
         path: 'favorites', 
         element: (
-          <MusicErrorBoundary fallbackMessage="There was an issue loading your favorites">
-            <FavoritesPage />
-          </MusicErrorBoundary>
+          <ProtectedRoute>
+            <MusicErrorBoundary fallbackMessage="There was an issue loading your favorites">
+              <FavoritesPage />
+            </MusicErrorBoundary>
+          </ProtectedRoute>
         ) 
       },
       { 
         path: 'profile', 
         element: (
-          <MusicErrorBoundary fallbackMessage="There was an issue loading your profile">
-            <ProfilePage />
+          <ProtectedRoute>
+            <MusicErrorBoundary fallbackMessage="There was an issue loading your profile">
+              <ProfilePage />
+            </MusicErrorBoundary>
+          </ProtectedRoute>
+        ) 
+      },
+      { 
+        path: 'profile/:username', 
+        element: (
+          <MusicErrorBoundary fallbackMessage="There was an issue loading this profile">
+            <ArtistPage />
+          </MusicErrorBoundary>
+        ) 
+      },
+      { 
+        path: 'album/:albumName', 
+        element: (
+          <MusicErrorBoundary fallbackMessage="There was an issue loading this album">
+            <AlbumPage />
           </MusicErrorBoundary>
         ) 
       },
       { 
         path: 'settings', 
         element: (
-          <MusicErrorBoundary fallbackMessage="There was an issue loading settings">
-            <SettingsPage />
-          </MusicErrorBoundary>
+          <ProtectedRoute>
+            <MusicErrorBoundary fallbackMessage="There was an issue loading settings">
+              <SettingsPage />
+            </MusicErrorBoundary>
+          </ProtectedRoute>
+        ) 
+      },
+      { 
+        path: 'admin', 
+        element: (
+          <AdminRoute>
+            <MusicErrorBoundary fallbackMessage="There was an issue loading the admin dashboard">
+              <AdminDashboard />
+            </MusicErrorBoundary>
+          </AdminRoute>
         ) 
       },
       { 
@@ -83,6 +123,14 @@ const router = createBrowserRouter([
         element: (
           <MusicErrorBoundary fallbackMessage="There was an issue loading this playlist">
             <PlaylistPage />
+          </MusicErrorBoundary>
+        ) 
+      },
+      { 
+        path: "/user/reset-password", 
+        element: (
+          <MusicErrorBoundary fallbackMessage="There was an issue loading the reset password page">
+            <ResetPasswordPage />
           </MusicErrorBoundary>
         ) 
       },

@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect } from 'react'
 import { useMusic } from '../../context/MusicContext'
 import { useAudioPlayer } from '../../hooks/audioHooks'
-import { formatTime } from '../../utils/audioUtils'
+// Removed unused formatTime import
+import { syncPlaybackState } from '../../utils/authUtils'
 import PlayerControls from './PlayerControls'
 import SeekBar from './SeekBar'
 import SongInfo from './SongInfo'
@@ -71,7 +72,8 @@ export default function AudioPlayer({ onToggleRightSidebar, isRightSidebarOpen }
     }
 
     syncAudioState()
-  }, [isPlaying, currentSong, audioPlayer, dispatch])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlaying, currentSong, dispatch])
 
   // Audio controls
   const handlePlayPause = useCallback(async () => {
@@ -161,6 +163,54 @@ export default function AudioPlayer({ onToggleRightSidebar, isRightSidebarOpen }
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  // Sync playback state to backend
+  const currentSongRef = React.useRef(currentSong)
+  const currentTimeRef = React.useRef(currentTime)
+
+  React.useEffect(() => {
+    currentSongRef.current = currentSong
+    currentTimeRef.current = currentTime
+  }, [currentSong, currentTime])
+
+  const doSync = React.useCallback(() => {
+    if (currentSongRef.current) {
+      const songId = currentSongRef.current.id || currentSongRef.current._id
+      syncPlaybackState(songId, currentTimeRef.current)
+    }
+  }, [])
+
+  // Sync when paused or song changes
+  React.useEffect(() => {
+    if (!isPlaying && currentSong) {
+      doSync()
+    }
+  }, [isPlaying, currentSong, doSync])
+
+  // Sync periodically (every 30 seconds) while playing
+  React.useEffect(() => {
+    let interval = null
+    if (isPlaying) {
+      interval = setInterval(() => {
+        doSync()
+      }, 30000) // 30 seconds
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [isPlaying, doSync])
+
+  // Sync on unmount / window close
+  React.useEffect(() => {
+    const handleBeforeUnload = () => {
+      doSync()
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      doSync() // Sync when component unmounts
+    }
+  }, [doSync])
+
   // Handle volume dropdown clicks
   React.useEffect(() => {
     const handleClickOutside = (event) => {
@@ -187,9 +237,9 @@ export default function AudioPlayer({ onToggleRightSidebar, isRightSidebarOpen }
     return null
   }
 
-  return (
-    <>
-      <div className="bg-white/95 dark:bg-gray-800/95 border-t border-gray-200/50 dark:border-gray-700/50 px-3 py-2 sm:px-4 lg:px-6 backdrop-blur-lg shadow-2xl w-full">
+    return (
+      <>
+        <div className="bg-white/95 dark:bg-gray-800/95 border-t border-gray-200/50 dark:border-gray-700/50 px-2 py-2 sm:px-4 lg:px-6 backdrop-blur-lg shadow-2xl w-full">
         <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
           
           {/* Song Info + Favorite */}
@@ -200,7 +250,7 @@ export default function AudioPlayer({ onToggleRightSidebar, isRightSidebarOpen }
           />
 
           {/* Controls Section */}
-          <div className="flex flex-col space-y-2 sm:space-y-1 flex-1 sm:max-w-md">
+          <div className="flex flex-col space-y-1 sm:space-y-1 flex-1 sm:max-w-md mt-2 sm:mt-0">
             <PlayerControls
               isPlaying={isPlaying}
               isShuffled={isShuffled}

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Outlet } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
 import { useMusic } from "../../context/MusicContext"
@@ -8,28 +8,29 @@ import RightSidebar from "../sidebars/RightSidebar"
 import AudioPlayer from '../audioPlayer/AudioPlayer'
 import MusicErrorBoundary from '../errorBoundary/MusicErrorBoundary'
 import { AudioPlayerSkeleton } from '../loading/LoadingStates'
+import PlaylistSelectionModal from '../modals/PlaylistSelectionModal'
 
 export default function Layout() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth()
-  const { state } = useMusic()
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
+  const { state, dispatch } = useMusic()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
 
   // Check if there's a current song to determine if audio player should be shown
   const hasCurrentSong = !!state.currentSong
   const isAudioLoading = hasCurrentSong && state.isSkipping
 
+  // Load last playback state from user
+  useEffect(() => {
+    if (user?.lastPlayback?.songId && typeof user.lastPlayback.songId === 'object' && !state.currentSong) {
+      dispatch({ type: 'SET_CURRENT_SONG', payload: user.lastPlayback.songId })
+      dispatch({ type: 'SET_TIME', payload: user.lastPlayback.currentTime || 0 })
+      dispatch({ type: 'SET_PLAYING', payload: false })
+    }
+  }, [user, state.currentSong, dispatch])
+
   const toggleRightSidebar = () => {
     setIsRightSidebarOpen(!isRightSidebarOpen)
-  }
-
-  const handleSearch = (query) => {
-    setSearchQuery(query)
-  }
-
-  const clearSearch = () => {
-    setSearchQuery("")
   }
 
   return (
@@ -37,15 +38,12 @@ export default function Layout() {
       <MusicErrorBoundary 
         fallbackMessage="There was an issue with the navigation"
         onReset={() => {
-          setSearchQuery("")
           setIsSidebarOpen(false)
           setIsRightSidebarOpen(false)
         }}
       >
         <Navbar 
           onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} 
-          onSearch={handleSearch}
-          searchQuery={searchQuery}
           isAuthenticated={isAuthenticated}
           authLoading={authLoading}
         />
@@ -63,11 +61,9 @@ export default function Layout() {
           <div className="p-3 sm:p-4 lg:p-6">
             <MusicErrorBoundary 
               fallbackMessage="There was an issue loading this page"
-              onReset={() => clearSearch()}
+              onReset={() => {}}
             >
               <Outlet context={{ 
-                searchQuery, 
-                clearSearch, 
                 isAuthenticated, 
                 authLoading 
               }} />
@@ -113,6 +109,9 @@ export default function Layout() {
           </MusicErrorBoundary>
         </div>
       )}
+
+      {/* Modals */}
+      <PlaylistSelectionModal />
     </div>
   )
 }

@@ -77,14 +77,18 @@ export default function SongCard({
   const displayTitle = song.title || "Unknown Title"
   const rawArtist = song.artist || song.singer || "Unknown Artist"
   const displayArtist = formatArtists(rawArtist)
-  const displayCover = song.cover || song.coverImageUrl || "https://placehold.co/200x200/EFEFEF/AAAAAA?text=Song+Cover"
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
+  const rawCover = song.cover || song.coverImageUrl;
+  const displayCover = rawCover
+      ? rawCover.startsWith('/uploads/') ? `${API_BASE}${rawCover}` : rawCover
+      : "https://placehold.co/200x200/EFEFEF/AAAAAA?text=Song+Cover"
   const displayDuration = song.duration || "0:00"
   const displayGenre = song.genre
 
   return (
     <>
       <div
-        className={`bg-white dark:bg-gray-800 rounded-lg p-2 sm:p-3 shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] border border-gray-100 dark:border-gray-700 group ${
+        className={`bg-white/90 dark:bg-white/5 backdrop-blur-md rounded-xl p-3 sm:p-4 shadow-sm hover:shadow-xl transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] transform hover:scale-[1.03] hover:-translate-y-1 border border-gray-100/50 dark:border-white/10 group ${
           !isEditMode ? 'cursor-pointer' : ''
         } ${isCurrentSong ? 'ring-2 ring-purple-500 ring-opacity-50' : ''}`}
         onMouseEnter={() => setIsHovered(true)}

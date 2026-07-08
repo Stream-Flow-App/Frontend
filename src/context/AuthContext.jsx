@@ -89,11 +89,17 @@ export const AuthProvider = ({ children }) => {
       
       if (result.success) {
         if (result.alreadyLoggedIn) {
-          // User is already logged in, get current user data
-          const currentUser = getCurrentUser()
-          if (currentUser) {
-            setUser(currentUser)
+          // User is already logged in, get current user data from result
+          if (result.user) {
+            setUser(result.user)
             setIsAuthenticated(true)
+          } else {
+            // fallback if somehow backend didn't return data
+            const currentUser = getCurrentUser()
+            if (currentUser) {
+              setUser(currentUser)
+              setIsAuthenticated(true)
+            }
           }
         } else {
           setUser(result.user)
@@ -144,10 +150,9 @@ export const AuthProvider = ({ children }) => {
       
       if (callApi) {
         await logoutUser()
-      } else {
-        // Just clear local state (for cross-tab logout)
-        clearAuth()
       }
+      // Note: we don't call clearAuth() here because clearAuth() dispatches
+      // 'auth:logout', which triggers handleLogout(false), causing an infinite loop.
       
       setUser(null)
       setIsAuthenticated(false)
@@ -156,13 +161,9 @@ export const AuthProvider = ({ children }) => {
       return { success: true, message: 'Logged out successfully' }
     } catch (error) {
       console.error('Logout error:', error)
-      // Still clear state even if API call fails
       setUser(null)
       setIsAuthenticated(false)
-      setAuthError(null)
-      clearAuth()
-      
-      return { success: true, message: 'Logged out locally' }
+      return { success: false, message: error.message }
     } finally {
       setIsLoading(false)
     }

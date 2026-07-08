@@ -1,13 +1,109 @@
 import { useState, useRef, useEffect } from "react"
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useTheme } from "../../context/ThemeContext"
 import { useAuth } from "../../context/AuthContext"
+import { useMusic } from "../../context/MusicContext"
 import { ToastContainer, useToast } from "../common/Toast"
+import { searchSongs } from "../../utils/apiUtils"
 import { useDebouncedCallback } from "../../hooks/useDebounce"
 import { PuffLoader } from 'react-spinners'
 import logoImage from "../../assets/logo.png"
-import { Search, Home, Menu, Sun, Moon, User, Settings, LogOut, X } from "lucide-react"
+import { Search, Home, Menu, Sun, Moon, User, Settings, LogOut, X, ShieldAlert, Play, Disc } from "lucide-react"
 import AuthenticationModals from "../authentication/AuthenticationModals"
+
+const getMediaUrl = (url) => {
+  if (!url || url === 'No Profile Picture' || url.includes('default-profile')) return null;
+  return url.startsWith('http') ? url : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${url}`;
+};
+
+const SearchDropdown = ({ isOpen, results, onClose, navigate, dispatch, isAuthenticated }) => {
+  if (!isOpen || (results.songs.length === 0 && results.albums.length === 0 && results.users.length === 0 && results.playlists.length === 0)) return null;
+
+  const handlePlaySong = (song) => {
+    if (!isAuthenticated) {
+      window.dispatchEvent(new Event('auth:required'));
+      return;
+    }
+    dispatch({ type: 'SET_CURRENT_SONG', payload: song });
+    dispatch({ type: 'SET_PLAYING', payload: true });
+    onClose();
+  };
+
+  return (
+    <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 max-h-[70vh] overflow-y-auto z-50 p-4 custom-scrollbar">
+      {/* Albums */}
+      {results.albums.length > 0 && (
+        <div className="mb-4">
+          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Albums</h3>
+          {results.albums.map(album => (
+            <button key={album} onClick={() => { navigate(`/album/${album}`); onClose(); }} className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl flex items-center space-x-3 transition-colors">
+              <Disc className="w-8 h-8 text-purple-600" />
+              <span className="font-medium text-gray-900 dark:text-white">{album}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      
+      {/* Profiles */}
+      {results.users.length > 0 && (
+        <div className="mb-4">
+          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Profiles</h3>
+          {results.users.map(user => (
+            <button key={user._id || user.id} onClick={() => { navigate(`/profile/${user.username || user._id}`); onClose(); }} className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl flex items-center space-x-3 transition-colors">
+              <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center overflow-hidden">
+                {getMediaUrl(user.profileImg) ? <img src={getMediaUrl(user.profileImg)} className="w-full h-full object-cover"/> : <User className="w-4 h-4 text-purple-600"/>}
+              </div>
+              <div>
+                <div className="font-medium text-gray-900 dark:text-white truncate">{user.name}</div>
+                <div className="text-xs text-gray-500 truncate">@{user.username}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+      
+      {/* Songs */}
+      {results.songs.length > 0 && (
+        <div className="mb-4">
+          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Songs</h3>
+          {results.songs.map(song => {
+            const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+            const rawCover = song.cover || song.coverImageUrl;
+            const displayCover = rawCover
+                ? rawCover.startsWith('/uploads/') ? `${API_BASE}${rawCover}` : rawCover
+                : "https://placehold.co/200x200/EFEFEF/AAAAAA?text=Song+Cover";
+            
+            return (
+            <button key={song._id || song.id} onClick={() => handlePlaySong(song)} className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl flex items-center space-x-3 group transition-colors">
+              <img src={displayCover} className="w-8 h-8 rounded-md object-cover" />
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-gray-900 dark:text-white truncate">{song.title}</div>
+                <div className="text-xs text-gray-500 truncate">{song.artist || song.singer}</div>
+              </div>
+              <Play className="w-4 h-4 text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+            )
+          })}
+        </div>
+      )}
+      
+      {/* Playlists */}
+      {results.playlists.length > 0 && (
+        <div className="mb-4">
+          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Playlists</h3>
+          {results.playlists.map(playlist => (
+            <button key={playlist._id || playlist.id} onClick={() => { navigate(`/playlist/${playlist._id || playlist.id}`); onClose(); }} className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl flex items-center space-x-3 transition-colors">
+              <div className="w-8 h-8 rounded-md bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                <Menu className="w-4 h-4 text-gray-500" />
+              </div>
+              <div className="font-medium text-gray-900 dark:text-white truncate">{playlist.name}</div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading }) {
   const { isDark, toggleTheme } = useTheme()
@@ -20,6 +116,12 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
   const [isSearching, setIsSearching] = useState(false)
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
+  const { dispatch } = useMusic()
+  
+  const [searchResults, setSearchResults] = useState({ songs: [], playlists: [], users: [], albums: [] })
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const dropdownRef = useRef(null)
 
   // Separate refs for desktop and mobile
   const userMenuDesktopRef = useRef(null)
@@ -27,6 +129,7 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
   const userMenuMobileRef = useRef(null)
   const userMenuButtonMobileRef = useRef(null)
   const searchInputRef = useRef(null)
+  const desktopSearchInputRef = useRef(null)
 
   // Enhanced Toast hook with FIFO queue (max 4 toasts)
   const {
@@ -43,14 +146,33 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
 
   // Debounced search callback - only triggers after 500ms of no typing
   const [debouncedSearch] = useDebouncedCallback(
-    (query) => {
-      setIsSearching(false)
-      if (onSearch) {
-        onSearch(query)
+    async (query) => {
+      if (!query.trim()) {
+        setSearchResults({ songs: [], playlists: [], users: [], albums: [] })
+        setIsDropdownOpen(false)
+        setIsSearching(false)
+        if (onSearch) onSearch("")
+        return
+      }
+      setIsSearching(true)
+      if (onSearch) onSearch(query)
+      try {
+        const results = await searchSongs(query, { limit: 5 })
+        const albums = Array.from(new Set(results.songs.map(s => s.album).filter(Boolean))).slice(0, 3)
+        setSearchResults({
+          songs: results.songs.slice(0, 5),
+          playlists: results.playlists.slice(0, 3),
+          users: results.users.slice(0, 3),
+          albums: albums
+        })
+        setIsDropdownOpen(true)
+      } catch (err) {
+        console.error("Search failed:", err)
+      } finally {
+        setIsSearching(false)
       }
     },
-    500,
-    [onSearch]
+    500
   )
 
   // Update local search query when prop changes (external updates)
@@ -90,6 +212,15 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
         setShowUserMenuMobile(false)
       }
 
+      // Close dropdown if click outside
+      const isOutsideDropdown = dropdownRef.current && !dropdownRef.current.contains(event.target);
+      const isOutsideMobileInput = !searchInputRef.current || !searchInputRef.current.contains(event.target);
+      const isOutsideDesktopInput = !desktopSearchInputRef.current || !desktopSearchInputRef.current.contains(event.target);
+
+      if (isDropdownOpen && isOutsideDropdown && isOutsideMobileInput && isOutsideDesktopInput) {
+        setIsDropdownOpen(false)
+      }
+
       // Close mobile search if click is outside
       if (isMobileSearchOpen &&
         searchInputRef.current &&
@@ -117,7 +248,21 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
       document.removeEventListener("mousedown", handleClickOutside)
       document.removeEventListener("keydown", handleEscape)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showUserMenuDesktop, showUserMenuMobile, isMobileSearchOpen])
+
+  useEffect(() => {
+    const handleAuthRequired = () => {
+      setAuthMode("signin")
+      setShowAuthModal(true)
+    }
+    
+    window.addEventListener('auth:required', handleAuthRequired)
+    
+    return () => {
+      window.removeEventListener('auth:required', handleAuthRequired)
+    }
+  }, [])
 
   // Toggle user menu with proper event handling
   const toggleUserMenuDesktop = (event) => {
@@ -243,6 +388,17 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
               >
                 <X className="w-5 h-5" />
               </button>
+
+              <div ref={dropdownRef}>
+                <SearchDropdown 
+                  isOpen={isDropdownOpen} 
+                  results={searchResults} 
+                  onClose={() => { setIsDropdownOpen(false); closeMobileSearch(); }} 
+                  navigate={navigate} 
+                  dispatch={dispatch} 
+                  isAuthenticated={isAuthenticated}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -313,9 +469,9 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
                       className="flex items-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 group"
                       title={`Logged in as ${user?.username || user?.name || 'User'}`}
                     >
-                      {user?.profileImg != "No Profile Picture" ? (
+                      {getMediaUrl(user?.profileImg) ? (
                         <img
-                          src={user.profileImg}
+                          src={getMediaUrl(user.profileImg)}
                           alt={user.username || user.name}
                           className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover border-2 border-purple-400 dark:border-purple-600 group-hover:border-purple-600 dark:group-hover:border-purple-800 transition-colors"
                         />
@@ -430,6 +586,7 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
                   </div>
 
                   <input
+                    ref={desktopSearchInputRef}
                     type="text"
                     placeholder={isSearching ? "Searching..." : "Search songs, artists, genres..."}
                     value={localSearchQuery}
@@ -446,6 +603,17 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
                       <X className="w-5 h-5" />
                     </button>
                   )}
+                  
+                  <div ref={dropdownRef}>
+                    <SearchDropdown 
+                      isOpen={isDropdownOpen} 
+                      results={searchResults} 
+                      onClose={() => setIsDropdownOpen(false)} 
+                      navigate={navigate} 
+                      dispatch={dispatch} 
+                      isAuthenticated={isAuthenticated}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -497,9 +665,9 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
                       className="flex items-center space-x-2 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 group"
                       title={`Logged in as ${user?.username || user?.name || 'User'}`}
                     >
-                      {user?.profileImg != "No Profile Picture" ? (
+                      {getMediaUrl(user?.profileImg) ? (
                         <img
-                          src={user.profileImg}
+                          src={getMediaUrl(user.profileImg)}
                           alt={user.username || user.name}
                           className="w-8 h-8 rounded-full object-cover border-2 border-purple-400 dark:border-purple-600 group-hover:border-purple-600 dark:group-hover:border-purple-800 transition-colors"
                         />
@@ -536,6 +704,16 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
                             Profile
                           </button>
                         </Link>
+                        {(user?.role === 'admin' || user?.role === 'moderator') && (
+                          <Link to="/admin" onClick={() => setShowUserMenuDesktop(false)} >
+                            <button
+                              className="flex items-center px-4 py-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-xl mx-2 w-11/12 text-left text-purple-600 dark:text-purple-400"
+                            >
+                              <ShieldAlert className="w-4 h-4 mr-3" />
+                              Admin Dashboard
+                            </button>
+                          </Link>
+                        )}
                         <Link to="/settings" onClick={() => setShowUserMenuDesktop(false)} >
                           <button
                             className="flex items-center px-4 py-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-xl mx-2 w-11/12 text-left"

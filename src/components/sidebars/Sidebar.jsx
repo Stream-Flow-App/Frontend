@@ -1,13 +1,15 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Link, useLocation } from "react-router-dom"
-import { Library, Plus, Heart, X, Upload, ListMusic } from "lucide-react"
+import { Library, Plus, Heart, X, Upload, ListMusic, ShieldAlert } from "lucide-react"
 import UploadModal from "../uploads/UploadModal"
 import { useMusic } from "../../context/MusicContext"
+import { useAuth } from "../../context/AuthContext"
 
 // Create Playlist Modal Component
 const CreatePlaylistModal = ({ isOpen, onClose, onCreatePlaylist }) => {
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
+  const [isPublic, setIsPublic] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
@@ -15,6 +17,16 @@ const CreatePlaylistModal = ({ isOpen, onClose, onCreatePlaylist }) => {
       setIsVisible(true)
     }
   }, [isOpen])
+
+  const handleClose = useCallback(() => {
+    setIsVisible(false)
+    setTimeout(() => {
+      setName("")
+      setDescription("")
+      setIsPublic(false)
+      onClose()
+    }, 300)
+  }, [onClose])
 
   useEffect(() => {
     const handleEscape = (e) => {
@@ -24,21 +36,12 @@ const CreatePlaylistModal = ({ isOpen, onClose, onCreatePlaylist }) => {
     }
     document.addEventListener("keydown", handleEscape)
     return () => document.removeEventListener("keydown", handleEscape)
-  }, [isOpen])
-
-  const handleClose = () => {
-    setIsVisible(false)
-    setTimeout(() => {
-      setName("")
-      setDescription("")
-      onClose()
-    }, 300)
-  }
+  }, [isOpen, handleClose])
 
   const handleSubmit = (e) => {
     e.preventDefault()
     if (name.trim()) {
-      onCreatePlaylist(name.trim(), description.trim())
+      onCreatePlaylist(name.trim(), description.trim(), isPublic)
       handleClose()
     }
   }
@@ -100,6 +103,19 @@ const CreatePlaylistModal = ({ isOpen, onClose, onCreatePlaylist }) => {
             />
           </div>
 
+          <div className="flex items-center space-x-3">
+            <input
+              type="checkbox"
+              id="isPublic"
+              checked={isPublic}
+              onChange={(e) => setIsPublic(e.target.checked)}
+              className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <label htmlFor="isPublic" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Make playlist public
+            </label>
+          </div>
+
           <button
             type="submit"
             disabled={!name.trim()}
@@ -118,11 +134,24 @@ export default function Sidebar({ isOpen, onClose }) {
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false)
   const location = useLocation()
   const { state, createPlaylist } = useMusic()
+  const { isAuthenticated, user } = useAuth()
+
+  const handleUploadClick = () => {
+    if (!isAuthenticated) {
+      window.dispatchEvent(new CustomEvent('auth:required'))
+      return
+    }
+    setShowUploadModal(true)
+  }
 
   const libraryItems = [
     { path: "/uploads", icon: Upload, label: "Your Uploads" },
     { path: "/favorites", icon: Heart, label: "Liked Songs" },
   ]
+
+  if (user?.role === 'admin' || user?.role === 'moderator') {
+    libraryItems.push({ path: "/admin", icon: ShieldAlert, label: "Admin Dashboard" })
+  }
 
   const handleMobileClose = () => {
     // Close sidebar on mobile after navigation
@@ -133,8 +162,8 @@ export default function Sidebar({ isOpen, onClose }) {
 
   const isActive = (path) => location.pathname === path
 
-  const handleCreatePlaylist = (name, description) => {
-    createPlaylist(name, description)
+  const handleCreatePlaylist = (name, description, isPublic) => {
+    createPlaylist(name, description, isPublic)
   }
 
   return (
@@ -213,10 +242,10 @@ export default function Sidebar({ isOpen, onClose }) {
             <nav className="space-y-1">
               {state.playlists?.map((playlist) => (
                 <Link
-                  key={playlist.id}
-                  to={`/playlist/${playlist.id}`}
+                  key={playlist._id || playlist.id}
+                  to={`/playlist/${playlist._id || playlist.id}`}
                   onClick={handleMobileClose}
-                  className={`flex items-center space-x-3 px-3 sm:px-4 py-3 rounded-xl transition-all duration-200 w-full text-left min-h-[48px] ${isActive(`/playlist/${playlist.id}`)
+                  className={`flex items-center space-x-3 px-3 sm:px-4 py-3 rounded-xl transition-all duration-200 w-full text-left min-h-[48px] ${isActive(`/playlist/${playlist._id || playlist.id}`)
                     ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
                     : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
                     }`}
@@ -224,9 +253,9 @@ export default function Sidebar({ isOpen, onClose }) {
                   <ListMusic className="w-5 h-5" />
                   <div className="flex-1 min-w-0">
                     <span className="font-medium block truncate text-sm sm:text-base">{playlist.name}</span>
-                    {playlist.songs?.length > 0 && (
+                    {((playlist.audio && playlist.audio.length > 0) || (playlist.songs && playlist.songs.length > 0)) && (
                       <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {playlist.songs.length} song{playlist.songs.length !== 1 ? 's' : ''}
+                        {playlist.audio?.length || playlist.songs?.length || 0} song{(playlist.audio?.length || playlist.songs?.length || 0) !== 1 ? 's' : ''}
                       </span>
                     )}
                   </div>
@@ -242,7 +271,7 @@ export default function Sidebar({ isOpen, onClose }) {
             {/* Wrapper for the Upload Button animation */}
             <div className="uploadButton rounded-xl p-0.5">
               <button
-                onClick={() => setShowUploadModal(true)}
+                onClick={handleUploadClick}
                 className="w-full text-black dark:text-white bg-white dark:bg-gray-900 
                 font-medium py-3 px-4 sm:px-6 rounded-xl transition-all duration-200 transform
                 min-h-[48px] flex items-center justify-center space-x-3"

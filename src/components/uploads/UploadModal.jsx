@@ -3,6 +3,8 @@ import { X, Upload, Music, CheckCircle, RefreshCw } from "lucide-react"
 import { useMusic } from "../../context/MusicContext"
 import { getAudioDuration } from "../../utils/audioUtils"
 
+import { uploadAudioAPI, updateAudioAPI, transformApiSong, parseDurationToMs } from "../../utils/apiUtils"
+
 export default function UploadModal({ onClose, editSong = null }) {
   const { dispatch } = useMusic()
   const [dragActive, setDragActive] = useState(false)
@@ -129,29 +131,49 @@ export default function UploadModal({ onClose, editSong = null }) {
     setIsUploading(true)
 
     try {
-      let audioUrl = null
-      let duration = "0:00"
-
-      // Handle audio file processing
+      let durationStr = "0:00"
+      
       if (selectedFile) {
-        audioUrl = URL.createObjectURL(selectedFile)
-        duration = await getAudioDuration(selectedFile)
+        durationStr = await getAudioDuration(selectedFile)
       } else if (isEditMode && editSong) {
-        // In edit mode, keep existing audio if not replacing
-        audioUrl = editSong.url
-        duration = editSong.duration
+        durationStr = editSong.duration
       }
 
-      const songData = {
-        id: isEditMode ? editSong.id : Date.now().toString(),
-        title: formData.title,
-        artist: formData.artist,
-        album: formData.album,
-        duration: duration,
-        cover: coverPreview || editSong?.cover,
-        url: audioUrl,
-        isUploaded: true,
+      const durationMs = parseDurationToMs(durationStr)
+      const data = new FormData()
+      
+      // Basic Metadata
+      data.append("title", formData.title)
+      data.append("genre", formData.album || "Unknown Genre") // Frontend uses 'album', backend uses 'genre'
+      data.append("singer", formData.artist || "Unknown Artist")
+      data.append("duration", durationMs)
+      data.append("isPrivate", "false") // Defaulting to public
+
+      // Audio file (only append if there's a new selected file)
+      if (selectedFile) {
+        data.append("audio", selectedFile)
       }
+      
+      // Cover file (only append if it's a File object, not a string URL)
+      if (selectedCover instanceof File) {
+        data.append("cover", selectedCover)
+      }
+
+      let returnedAudioData;
+      
+      if (isEditMode) {
+        const response = await updateAudioAPI(editSong.id, data)
+        returnedAudioData = response.audio
+      } else {
+        if (!selectedFile) throw new Error("Audio file is required for new uploads")
+        if (!selectedCover || !(selectedCover instanceof File)) throw new Error("Cover image is required for new uploads")
+        
+        const response = await uploadAudioAPI(data)
+        returnedAudioData = response.audio
+      }
+
+      const songData = transformApiSong(returnedAudioData)
+      songData.isUploaded = true // Explicitly mark it for the UI
 
       if (isEditMode) {
         dispatch({ type: "UPDATE_UPLOAD", payload: songData })
@@ -160,6 +182,7 @@ export default function UploadModal({ onClose, editSong = null }) {
       }
 
       setUploadSuccess(true)
+      window.dispatchEvent(new CustomEvent('songUploaded'))
       setTimeout(() => {
         handleClose()
       }, 2000)

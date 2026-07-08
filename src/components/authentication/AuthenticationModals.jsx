@@ -4,6 +4,14 @@ import { useAuth } from "../../context/AuthContext"
 import FormInput from "../common/FormInput"
 import * as Yup from "yup"
 import { X, Mail, Lock, User } from "lucide-react"
+import { requestPasswordReset } from "../../utils/authUtils"
+
+const FormObserver = ({ values, onChange }) => {
+  useEffect(() => {
+    onChange(values)
+  }, [values, onChange])
+  return null
+}
 
 // Validation schemas (unchanged)
 const signInSchema = Yup.object({
@@ -37,6 +45,12 @@ const signUpSchema = Yup.object({
     .required("Please confirm your password")
 })
 
+const forgotPasswordSchema = Yup.object({
+  email: Yup.string()
+    .email("Please enter a valid email address")
+    .required("Email is required")
+})
+
 export default function AuthenticationModals({ isOpen, onClose, initialMode, onAuthSuccess, showAuthToast }) {
   const { login, register, isLoading } = useAuth()
   const [mode, setMode] = useState(initialMode)
@@ -56,6 +70,10 @@ export default function AuthenticationModals({ isOpen, onClose, initialMode, onA
     email: "",
     password: "",
     confirmPassword: ""
+  })
+
+  const [forgotPasswordValues, setForgotPasswordValues] = useState({
+    email: ""
   })
 
   // Handle modal opening/closing animations (unchanged)
@@ -148,6 +166,27 @@ export default function AuthenticationModals({ isOpen, onClose, initialMode, onA
     }
   }
 
+  const handleForgotPasswordSubmit = async (values, { setSubmitting, setFieldError }) => {
+    try {
+      const result = await requestPasswordReset(values.email)
+      if (result.success) {
+        if (showAuthToast) {
+          showAuthToast(result.message, true)
+        }
+        clearAllForms()
+        switchMode("signin")
+      }
+    } catch (error) {
+      console.error('Forgot password error:', error)
+      setFieldError('email', error.message)
+      if (showAuthToast) {
+        showAuthToast(error.message, false)
+      }
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   const switchMode = (newMode) => {
     setMode(newMode)
     setShowPassword(false)
@@ -183,6 +222,9 @@ export default function AuthenticationModals({ isOpen, onClose, initialMode, onA
       password: "",
       confirmPassword: ""
     })
+    setForgotPasswordValues({
+      email: ""
+    })
     setRememberMe(false)
   }
 
@@ -202,7 +244,7 @@ export default function AuthenticationModals({ isOpen, onClose, initialMode, onA
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200/50 dark:border-gray-700/50">
           <h2 className="text-lg sm:text-2xl font-bold bg-gradient-to-bl from-purple-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
-            {mode === "signin" ? "Welcome Back" : "Join StreamFlow"}
+            {mode === "signin" ? "Welcome Back" : mode === "signup" ? "Join StreamFlow" : "Reset Password"}
           </h2>
           <button
             onClick={handleClose}
@@ -222,13 +264,9 @@ export default function AuthenticationModals({ isOpen, onClose, initialMode, onA
               onSubmit={handleSignInSubmit}
               enableReinitialize
             >
-              {({ values, isSubmitting, handleSubmit }) => {
-                useEffect(() => {
-                  setSignInValues(values)
-                }, [values])
-
-                return (
-                  <div className="space-y-4 sm:space-y-5">
+              {({ values, isSubmitting, handleSubmit }) => (
+                <div className="space-y-4 sm:space-y-5">
+                  <FormObserver values={values} onChange={setSignInValues} />
                     <Field name="email">
                       {({ field, form }) => (
                         <FormInput
@@ -255,6 +293,16 @@ export default function AuthenticationModals({ isOpen, onClose, initialMode, onA
                       )}
                     </Field>
 
+                    <div className="flex justify-end mt-1">
+                      <button
+                        type="button"
+                        onClick={() => switchMode("forgot-password")}
+                        className="text-xs sm:text-sm text-purple-600 hover:text-purple-700 font-medium transition-colors"
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
+
                     <button
                       type="button"
                       onClick={handleSubmit}
@@ -276,8 +324,7 @@ export default function AuthenticationModals({ isOpen, onClose, initialMode, onA
                       </button>
                     </p>
                   </div>
-                )
-              }}
+                )}
             </Formik>
           </div>
         )}
@@ -291,13 +338,9 @@ export default function AuthenticationModals({ isOpen, onClose, initialMode, onA
               onSubmit={handleSignUpSubmit}
               enableReinitialize
             >
-              {({ values, isSubmitting, handleSubmit }) => {
-                useEffect(() => {
-                  setSignUpValues(values)
-                }, [values])
-
-                return (
+              {({ values, isSubmitting, handleSubmit }) => (
                   <div className="space-y-3 sm:space-y-4">
+                    <FormObserver values={values} onChange={setSignUpValues} />
                     <Field name="username">
                       {({ field, form }) => (
                         <FormInput
@@ -371,8 +414,61 @@ export default function AuthenticationModals({ isOpen, onClose, initialMode, onA
                       </button>
                     </p>
                   </div>
-                )
-              }}
+                )}
+            </Formik>
+          </div>
+        )}
+
+        {/* Forgot Password Form */}
+        {mode === "forgot-password" && (
+          <div className="p-4 sm:p-6">
+            <Formik
+              initialValues={forgotPasswordValues}
+              validationSchema={forgotPasswordSchema}
+              onSubmit={handleForgotPasswordSubmit}
+              enableReinitialize
+            >
+              {({ values, isSubmitting, handleSubmit }) => (
+                  <div className="space-y-4 sm:space-y-5">
+                    <FormObserver values={values} onChange={setForgotPasswordValues} />
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 text-center">
+                      Enter your email address and we'll send you a link to reset your password.
+                    </p>
+
+                    <Field name="email">
+                      {({ field, form }) => (
+                        <FormInput
+                          field={field}
+                          form={form}
+                          type="email"
+                          placeholder="Enter your email"
+                          icon={Mail}
+                        />
+                      )}
+                    </Field>
+
+                    <button
+                      type="button"
+                      onClick={handleSubmit}
+                      disabled={isSubmitting || isLoading}
+                      className="w-full bg-gradient-to-bl from-purple-600 via-purple-600 to-blue-600 text-white py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold hover:from-purple-700 hover:via-purple-700 hover:to-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg mt-4 sm:mt-6 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base"
+                    >
+                      {isSubmitting || isLoading ? "Sending..." : "Send Reset Link"}
+                    </button>
+
+                    <p className="text-center text-gray-600 dark:text-gray-400 text-xs sm:text-sm mt-3 sm:mt-4">
+                      Remember your password?{" "}
+                      <button
+                        type="button"
+                        onClick={() => switchMode("signin")}
+                        disabled={isSubmitting || isLoading}
+                        className="text-purple-600 hover:text-purple-700 font-semibold transition-colors disabled:opacity-50"
+                      >
+                        Sign in
+                      </button>
+                    </p>
+                  </div>
+                )}
             </Formik>
           </div>
         )}

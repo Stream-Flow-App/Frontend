@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useReducer, useEffect, useState, useCallback } from 'react'
+import * as playlistUtils from '../utils/playlistUtils'
 
 // Action Types - Centralized for better maintenance
+// eslint-disable-next-line react-refresh/only-export-components
 export const MUSIC_ACTIONS = {
   // Playback control
   SET_CURRENT_SONG: 'SET_CURRENT_SONG',
@@ -39,11 +41,16 @@ export const MUSIC_ACTIONS = {
   SET_UPLOADS: 'SET_UPLOADS',
 
   // Playlists
+  SET_PLAYLISTS: 'SET_PLAYLISTS',
   CREATE_PLAYLIST: 'CREATE_PLAYLIST',
   DELETE_PLAYLIST: 'DELETE_PLAYLIST',
   UPDATE_PLAYLIST: 'UPDATE_PLAYLIST',
   ADD_SONG_TO_PLAYLIST: 'ADD_SONG_TO_PLAYLIST',
   REMOVE_SONG_FROM_PLAYLIST: 'REMOVE_SONG_FROM_PLAYLIST',
+
+  // Modal State
+  OPEN_PLAYLIST_MODAL: 'OPEN_PLAYLIST_MODAL',
+  CLOSE_PLAYLIST_MODAL: 'CLOSE_PLAYLIST_MODAL',
 
   // State management
   LOAD_DATA: 'LOAD_DATA',
@@ -75,36 +82,32 @@ const initialState = {
   // User data
   favorites: [],
   uploads: [],
-  playlists: [
-    {
-      id: "playlist1",
-      name: "My Favorites",
-      description: "My favorite songs collection",
-      songs: [],
-      createdAt: Date.now()
-    }
-  ],
+  playlists: [],
 
   // UI state
   error: null,
-  isInitialized: false
+  isInitialized: false,
+  playlistModal: { isOpen: false, song: null }
 }
 
 // Utility functions
 const createSongId = (song) => song.id || song._id
-const normalizeSong = (song) => ({
-  id: createSongId(song),
-  title: song.title || 'Unknown Title',
-  artist: song.artist || song.singer || 'Unknown Artist',
-  album: song.album,
-  duration: song.duration || '0:00',
-  cover: song.cover || song.coverImageUrl,
-  url: song.url || song.audioUrl,
-  isUploaded: song.isUploaded || false,
-  genre: song.genre,
-  category: song.category,
-  ...song // Include any additional properties
-})
+const normalizeSong = (song) => {
+  const normalized = {
+    ...song, // Include any additional properties first
+    title: song.title || 'Unknown Title',
+    artist: song.artist || song.singer || 'Unknown Artist',
+    album: song.album,
+    duration: song.duration || '0:00',
+    cover: song.cover || song.coverImageUrl,
+    url: song.url || song.audioUrl,
+    isUploaded: song.isUploaded || false,
+    genre: song.genre,
+    category: song.category,
+  }
+  normalized.id = createSongId(song) // Set id last to prevent overwrite
+  return normalized
+}
 
 const shuffleArray = (array) => {
   const newArray = [...array]
@@ -120,6 +123,7 @@ const findSongIndex = (queue, songId) => {
 }
 
 // Action creators for better consistency
+// eslint-disable-next-line react-refresh/only-export-components
 export const createMusicAction = (type, payload) => ({ type, payload })
 
 // Enhanced reducer with better error handling and state consistency
@@ -147,23 +151,25 @@ function musicReducer(state, action) {
           error: null
         }
 
-      case MUSIC_ACTIONS.SET_VOLUME:
+      case MUSIC_ACTIONS.SET_VOLUME: {
         const newVolume = Math.max(0, Math.min(1, Number(action.payload) || 0))
         return {
           ...state,
           volume: newVolume,
           error: null
         }
+      }
 
-      case MUSIC_ACTIONS.SET_TIME:
+      case MUSIC_ACTIONS.SET_TIME: {
         const newTime = Math.max(0, Number(action.payload) || 0)
         return {
           ...state,
           currentTime: newTime,
           error: null
         }
+      }
 
-      case MUSIC_ACTIONS.SET_DURATION:
+      case MUSIC_ACTIONS.SET_DURATION: {
         const newDuration = Number(action.payload)
         if (newDuration && newDuration !== Infinity && !isNaN(newDuration)) {
           return {
@@ -173,6 +179,7 @@ function musicReducer(state, action) {
           }
         }
         return state
+      }
 
       case MUSIC_ACTIONS.SET_SKIPPING:
         return {
@@ -221,6 +228,7 @@ function musicReducer(state, action) {
         }
 
         const queueIndex = findSongIndex(newQueue, currentSongId)
+        const isSameSong = state.currentSong && createSongId(state.currentSong) === currentSongId
 
         return {
           ...state,
@@ -230,12 +238,12 @@ function musicReducer(state, action) {
           queueIndex: queueIndex >= 0 ? queueIndex : 0,
           isShuffled: shouldApplyShuffle,
           isPlaying: true,
-          currentTime: 0,
-          duration: 0,
+          currentTime: isSameSong ? state.currentTime : 0,
+          duration: isSameSong ? state.duration : 0,
           isSkipping: false,
           error: null,
           // Add to history if it's a different song
-          history: state.currentSong && createSongId(state.currentSong) !== currentSongId
+          history: !isSameSong
             ? [state.currentSong, ...state.history.slice(0, 49)]
             : state.history
         }
@@ -579,80 +587,53 @@ function musicReducer(state, action) {
           error: null
         }
 
-      case MUSIC_ACTIONS.CREATE_PLAYLIST: {
-        const { name, description = "" } = action.payload
-        if (!name) return { ...state, error: 'Playlist name required' }
-
-        const newPlaylist = {
-          id: `playlist_${Date.now()}`,
-          name,
-          description,
-          songs: [],
-          createdAt: Date.now()
-        }
-
+      case MUSIC_ACTIONS.SET_PLAYLISTS:
         return {
           ...state,
-          playlists: [...state.playlists, newPlaylist],
+          playlists: Array.isArray(action.payload) ? action.payload : [],
           error: null
         }
-      }
+
+      case MUSIC_ACTIONS.CREATE_PLAYLIST:
+        return {
+          ...state,
+          playlists: [action.payload, ...state.playlists],
+          error: null
+        }
 
       case MUSIC_ACTIONS.DELETE_PLAYLIST:
         return {
           ...state,
-          playlists: state.playlists.filter(playlist => playlist.id !== action.payload),
+          playlists: state.playlists.filter(playlist => (playlist.id || playlist._id) !== action.payload),
           error: null
         }
 
-      case MUSIC_ACTIONS.UPDATE_PLAYLIST: {
-        const { id, updates } = action.payload
-        return {
-          ...state,
-          playlists: state.playlists.map(playlist =>
-            playlist.id === id ? { ...playlist, ...updates } : playlist
-          ),
-          error: null
-        }
-      }
-
-      case MUSIC_ACTIONS.ADD_SONG_TO_PLAYLIST: {
-        const { playlistId, song } = action.payload
-        if (!song) return { ...state, error: 'No song provided' }
-
-        const normalizedSongToAdd = normalizeSong(song)
-
-        return {
-          ...state,
-          playlists: state.playlists.map(playlist =>
-            playlist.id === playlistId
-              ? {
-                ...playlist,
-                songs: [...playlist.songs, normalizedSongToAdd],
-                updatedAt: Date.now()
-              }
-              : playlist
-          ),
-          error: null
-        }
-      }
-
+      case MUSIC_ACTIONS.UPDATE_PLAYLIST:
+      case MUSIC_ACTIONS.ADD_SONG_TO_PLAYLIST:
       case MUSIC_ACTIONS.REMOVE_SONG_FROM_PLAYLIST: {
-        const { playlistId, songId } = action.payload
+        const updatedPlaylist = action.payload;
         return {
           ...state,
           playlists: state.playlists.map(playlist =>
-            playlist.id === playlistId
-              ? {
-                ...playlist,
-                songs: playlist.songs.filter(song => createSongId(song) !== songId),
-                updatedAt: Date.now()
-              }
-              : playlist
+            (playlist.id || playlist._id) === (updatedPlaylist.id || updatedPlaylist._id) ? updatedPlaylist : playlist
           ),
           error: null
         }
       }
+      
+      case MUSIC_ACTIONS.OPEN_PLAYLIST_MODAL:
+        return {
+          ...state,
+          playlistModal: { isOpen: true, song: action.payload },
+          error: null
+        }
+        
+      case MUSIC_ACTIONS.CLOSE_PLAYLIST_MODAL:
+        return {
+          ...state,
+          playlistModal: { isOpen: false, song: null },
+          error: null
+        }
 
       case MUSIC_ACTIONS.LOAD_DATA: {
         const data = action.payload
@@ -834,24 +815,90 @@ export function MusicProvider({ children }) {
   }, [state.queue, state.queueIndex, state.repeatMode, state.currentTime, state.currentSong])
 
   // Playlist functions
-  const createPlaylist = useCallback((name, description = "") => {
-    dispatch(createMusicAction(MUSIC_ACTIONS.CREATE_PLAYLIST, { name, description }))
+  const createPlaylist = useCallback(async (name, description = "", isPublic = false) => {
+    try {
+      const response = await playlistUtils.createPlaylist({ name, description, isPublic })
+      if (response.success) {
+        dispatch(createMusicAction(MUSIC_ACTIONS.CREATE_PLAYLIST, response.playlist))
+      }
+      return response
+    } catch (error) {
+      console.error('Error creating playlist:', error)
+      throw error
+    }
   }, [])
 
-  const deletePlaylist = useCallback((playlistId) => {
-    dispatch(createMusicAction(MUSIC_ACTIONS.DELETE_PLAYLIST, playlistId))
+  const deletePlaylist = useCallback(async (playlistId) => {
+    try {
+      const response = await playlistUtils.deletePlaylist(playlistId)
+      if (response.success) {
+        dispatch(createMusicAction(MUSIC_ACTIONS.DELETE_PLAYLIST, playlistId))
+      }
+      return response
+    } catch (error) {
+      console.error('Error deleting playlist:', error)
+      throw error
+    }
   }, [])
 
-  const updatePlaylist = useCallback((playlistId, updates) => {
-    dispatch(createMusicAction(MUSIC_ACTIONS.UPDATE_PLAYLIST, { id: playlistId, updates }))
+  const updatePlaylist = useCallback(async (playlistId, updateData) => {
+    try {
+      const response = await playlistUtils.updatePlaylist(playlistId, updateData)
+      if (response.success) {
+        dispatch(createMusicAction(MUSIC_ACTIONS.UPDATE_PLAYLIST, response.playlist))
+      }
+      return response
+    } catch (error) {
+      console.error('Error updating playlist:', error)
+      throw error
+    }
   }, [])
 
-  const addSongToPlaylist = useCallback((playlistId, song) => {
-    dispatch(createMusicAction(MUSIC_ACTIONS.ADD_SONG_TO_PLAYLIST, { playlistId, song }))
+  const addSongToPlaylist = useCallback(async (playlistId, songId) => {
+    try {
+      const response = await playlistUtils.addSongToPlaylist(playlistId, songId)
+      if (response.success) {
+        dispatch(createMusicAction(MUSIC_ACTIONS.ADD_SONG_TO_PLAYLIST, response.playlist))
+      }
+      return response
+    } catch (error) {
+      console.error('Error adding song to playlist:', error)
+      throw error
+    }
   }, [])
 
-  const removeSongFromPlaylist = useCallback((playlistId, songId) => {
-    dispatch(createMusicAction(MUSIC_ACTIONS.REMOVE_SONG_FROM_PLAYLIST, { playlistId, songId }))
+  const removeSongFromPlaylist = useCallback(async (playlistId, songId) => {
+    try {
+      const response = await playlistUtils.removeSongFromPlaylist(playlistId, songId)
+      if (response.success) {
+        dispatch(createMusicAction(MUSIC_ACTIONS.REMOVE_SONG_FROM_PLAYLIST, response.playlist))
+      }
+      return response
+    } catch (error) {
+      console.error('Error removing song from playlist:', error)
+      throw error
+    }
+  }, [])
+  
+  const fetchPlaylists = useCallback(async () => {
+    try {
+      const response = await playlistUtils.fetchUserPlaylists()
+      if (response.success) {
+        dispatch(createMusicAction(MUSIC_ACTIONS.SET_PLAYLISTS, response.playlists))
+      }
+      return response
+    } catch (error) {
+      console.error('Error fetching playlists:', error)
+      throw error
+    }
+  }, [])
+  
+  const openPlaylistModal = useCallback((song) => {
+    dispatch(createMusicAction(MUSIC_ACTIONS.OPEN_PLAYLIST_MODAL, song))
+  }, [])
+
+  const closePlaylistModal = useCallback(() => {
+    dispatch(createMusicAction(MUSIC_ACTIONS.CLOSE_PLAYLIST_MODAL))
   }, [])
 
   // Error handling
@@ -895,6 +942,9 @@ export function MusicProvider({ children }) {
     updatePlaylist,
     addSongToPlaylist,
     removeSongFromPlaylist,
+    fetchPlaylists,
+    openPlaylistModal,
+    closePlaylistModal,
 
     // Error handling
     clearError,
@@ -907,6 +957,7 @@ export function MusicProvider({ children }) {
   return <MusicContext.Provider value={contextValue}>{children}</MusicContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useMusic = () => {
   const context = useContext(MusicContext)
   if (!context) {

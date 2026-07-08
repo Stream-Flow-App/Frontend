@@ -1,20 +1,23 @@
-import { ListMusic, Edit2, Trash2, X, Search } from "lucide-react"
+import { ListMusic, Edit2, Trash2, X, Search, Globe, Lock, Share2, Copy, Check } from "lucide-react"
 import SongCard from "../songCard/SongCard.jsx"
 import { useMusic } from "../../context/MusicContext"
-import { useParams, useNavigate, useOutletContext } from "react-router-dom"
+import { useAuth } from "../../context/AuthContext"
+import { useParams, useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
-import { usePageSearch } from "../../hooks/usePageSearch"
+import * as playlistUtils from "../../utils/playlistUtils"
 
 // Edit Playlist Modal Component
 const EditPlaylistModal = ({ isOpen, onClose, playlist, onUpdatePlaylist }) => {
   const [name, setName] = useState(playlist?.name || "")
   const [description, setDescription] = useState(playlist?.description || "")
+  const [isPublic, setIsPublic] = useState(playlist?.isPublic || false)
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
     if (isOpen && playlist) {
       setName(playlist.name || "")
       setDescription(playlist.description || "")
+      setIsPublic(playlist.isPublic || false)
       setIsVisible(true)
     }
   }, [isOpen, playlist])
@@ -27,6 +30,7 @@ const EditPlaylistModal = ({ isOpen, onClose, playlist, onUpdatePlaylist }) => {
     }
     document.addEventListener("keydown", handleEscape)
     return () => document.removeEventListener("keydown", handleEscape)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
   const handleClose = () => {
@@ -34,6 +38,7 @@ const EditPlaylistModal = ({ isOpen, onClose, playlist, onUpdatePlaylist }) => {
     setTimeout(() => {
       setName(playlist?.name || "")
       setDescription(playlist?.description || "")
+      setIsPublic(playlist?.isPublic || false)
       onClose()
     }, 300)
   }
@@ -41,7 +46,7 @@ const EditPlaylistModal = ({ isOpen, onClose, playlist, onUpdatePlaylist }) => {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (name.trim()) {
-      onUpdatePlaylist(name.trim(), description.trim())
+      onUpdatePlaylist(name.trim(), description.trim(), isPublic)
       handleClose()
     }
   }
@@ -101,6 +106,19 @@ const EditPlaylistModal = ({ isOpen, onClose, playlist, onUpdatePlaylist }) => {
               rows={3}
               className="input-primary w-full px-3 py-2.5 sm:py-2 rounded-lg text-sm placeholder-gray-400 resize-none"
             />
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <input
+              type="checkbox"
+              id="editIsPublic"
+              checked={isPublic}
+              onChange={(e) => setIsPublic(e.target.checked)}
+              className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <label htmlFor="editIsPublic" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Make playlist public
+            </label>
           </div>
 
           <button
@@ -178,43 +196,48 @@ const DeletePlaylistModal = ({ isOpen, onClose, playlist, onConfirmDelete }) => 
 
 export default function PlaylistPage() {
   const { state, deletePlaylist, updatePlaylist } = useMusic()
+  const { user } = useAuth()
   const { playlistId } = useParams()
   const navigate = useNavigate()
-  const { searchQuery: externalSearchQuery, clearSearch: externalClearSearch } = useOutletContext()
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [copied, setCopied] = useState(false)
+  
+  const [fetchedPlaylist, setFetchedPlaylist] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Find the specific playlist by ID
-  const playlist = state.playlists?.find(p => p.id === playlistId)
-  const playlistSongs = playlist?.songs || []
+  // Find the specific playlist by ID from context
+  const contextPlaylist = state.playlists?.find(p => (p.id || p._id) === playlistId)
+  
+  // Prefer fetched playlist to ensure fresh data, fallback to context playlist
+  const playlist = fetchedPlaylist || contextPlaylist
+  const playlistSongs = playlist?.audio || playlist?.songs || []
+  
+  const isOwner = playlist && user && (playlist.owner?._id === user.id || playlist.owner?._id === user._id || playlist.owner === user.id || playlist.owner === user._id)
 
-  // Use the new page search hook for local searching
-  const {
-    searchQuery,
-    searchResults,
-    isSearching,
-    handleSearchChange,
-    clearSearch,
-    setSearchQuery,
-    hasResults,
-    isLocalSearch,
-    searchStats
-  } = usePageSearch(playlistSongs)
-
-  // Sync external search query with internal search
   useEffect(() => {
-    if (externalSearchQuery !== searchQuery) {
-      if (externalSearchQuery === "") {
-        clearSearch()
-      } else {
-        setSearchQuery(externalSearchQuery)
-        handleSearchChange(externalSearchQuery)
+    let isMounted = true
+    const loadPlaylist = async () => {
+      try {
+        setIsLoading(true)
+        const data = await playlistUtils.fetchPlaylistById(playlistId)
+        if (isMounted && data.success) {
+          setFetchedPlaylist(data.playlist)
+        }
+      } catch (err) {
+        console.error("Failed to fetch playlist", err)
+      } finally {
+        if (isMounted) setIsLoading(false)
       }
     }
-  }, [externalSearchQuery, searchQuery, handleSearchChange, clearSearch, setSearchQuery])
+    
+    loadPlaylist()
+    
+    return () => { isMounted = false }
+  }, [playlistId])
 
-  const handleUpdatePlaylist = (name, description) => {
-    updatePlaylist(playlistId, { name, description })
+  const handleUpdatePlaylist = async (name, description, isPublic) => {
+    updatePlaylist(playlistId, { name, description, isPublic })
   }
 
   const handleDeleteClick = () => {
@@ -227,23 +250,22 @@ export default function PlaylistPage() {
     navigate("/")
   }
 
-  // Clear search handler
-  const handleClearSearch = () => {
-    clearSearch()
-    if (externalClearSearch) {
-      externalClearSearch()
-    }
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
-  const truncate = (text, maxLength = 50) => {
-    if (!text || typeof text !== 'string') return text
-    const trimmed = text.trim()
-    return trimmed.length > maxLength ? `${trimmed.slice(0, maxLength - 1)}…` : trimmed
+  // Handle loading state
+  if (isLoading && !playlist) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    )
   }
 
-  const truncatedSearchQuery = truncate(searchQuery, 50)
-
-  // Handle case where playlist is not found
+  // Handle case where playlist is not found or user is not authorized
   if (!playlist) {
     return (
       <div className="text-center py-8 sm:py-16 px-4">
@@ -254,7 +276,7 @@ export default function PlaylistPage() {
           Playlist not found
         </h3>
         <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">
-          The playlist you're looking for doesn't exist.
+          The playlist you're looking for doesn't exist or is private.
         </p>
       </div>
     )
@@ -266,9 +288,22 @@ export default function PlaylistPage() {
         {/* Header Section */}
         <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2 break-words">
-              {searchQuery ? `Search in ${playlist.name}` : playlist.name}
-            </h1>
+            <div className="flex items-center space-x-3 mb-2">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white break-words">
+                {playlist.name}
+              </h1>
+              {playlist.isPublic ? (
+                <div className="flex items-center space-x-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-medium">
+                  <Globe className="w-3 h-3" />
+                  <span>Public</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-1 px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full text-xs font-medium">
+                  <Lock className="w-3 h-3" />
+                  <span>Private</span>
+                </div>
+              )}
+            </div>
             {playlist.description && (
               <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-300 line-clamp-2 mb-3 sm:mb-4">
                 {playlist.description}
@@ -276,61 +311,48 @@ export default function PlaylistPage() {
             )}
             <div className="flex items-center space-x-3 sm:space-x-4 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
               <span>
-                {searchQuery
-                  ? `${searchResults.length} of ${playlistSongs.length}`
-                  : playlistSongs.length
-                } {(searchQuery ? searchResults.length : playlistSongs.length) === 1 ? 'song' : 'songs'}
+                {playlistSongs.length} {playlistSongs.length === 1 ? 'song' : 'songs'}
               </span>
             </div>
-            {searchQuery && (
-              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mt-1 break-words">
-                Results for "{truncatedSearchQuery}" in this playlist
-              </p>
-            )}
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-2 sm:ml-4 flex-shrink-0">
-            <button
-              onClick={() => setShowEditModal(true)}
-              className="btn-ghost flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl hover:text-purple-600 dark:hover:text-purple-400 text-sm"
-              title="Edit playlist"
-            >
-              <Edit2 className="w-4 h-4" />
-              <span className="hidden xs:inline sm:inline">Edit</span>
-            </button>
-            <button
-              onClick={handleDeleteClick}
-              className="btn-ghost flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl hover:text-red-600 dark:hover:text-red-400 text-sm"
-              title="Delete playlist"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span className="hidden xs:inline sm:inline">Delete</span>
-            </button>
+            {playlist.isPublic && (
+              <button
+                onClick={handleShare}
+                className="btn-ghost flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl hover:text-blue-600 dark:hover:text-blue-400 text-sm"
+                title="Share playlist"
+              >
+                {copied ? <Check className="w-4 h-4 text-green-500" /> : <Share2 className="w-4 h-4" />}
+                <span className="hidden xs:inline sm:inline">{copied ? "Copied!" : "Share"}</span>
+              </button>
+            )}
+            
+            {isOwner && (
+              <>
+                <button
+                  onClick={() => setShowEditModal(true)}
+                  className="btn-ghost flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl hover:text-purple-600 dark:hover:text-purple-400 text-sm"
+                  title="Edit playlist"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  <span className="hidden xs:inline sm:inline">Edit</span>
+                </button>
+                <button
+                  onClick={handleDeleteClick}
+                  className="btn-ghost flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl hover:text-red-600 dark:hover:text-red-400 text-sm"
+                  title="Delete playlist"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span className="hidden xs:inline sm:inline">Delete</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Search Results Info */}
-        {searchQuery && playlistSongs.length > 0 && (
-          <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 lg:mb-6">
-            <div className="flex items-center space-x-2">
-              <Search className="w-4 h-4 text-purple-500 flex-shrink-0" />
-              <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                Searching in this playlist
-              </span>
-            </div>
-            {searchResults.length > 0 && (
-              <button
-                onClick={handleClearSearch}
-                className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 text-xs sm:text-sm font-medium self-start sm:self-center"
-              >
-                Show all songs
-              </button>
-            )}
-          </div>
-        )}
 
-        {/* Content */}
         {playlistSongs.length === 0 ? (
           // No songs in playlist
           <div className="text-center py-8 sm:py-10">
@@ -344,30 +366,11 @@ export default function PlaylistPage() {
               Start building your playlist by adding your favorite songs from your library.
             </p>
           </div>
-        ) : searchQuery && searchResults.length === 0 ? (
-          // No search results
-          <div className="text-center py-8 sm:py-10">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-              <Search className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              No matching songs found
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 max-w-sm mx-auto px-4 break-words">
-              No songs in this playlist match "{truncatedSearchQuery}"
-            </p>
-            <button
-              onClick={handleClearSearch}
-              className="bg-purple-600 text-white px-4 sm:px-6 py-2.5 sm:py-2 rounded-lg text-sm sm:text-base font-medium hover:bg-purple-700 transition-colors"
-            >
-              Show All Songs
-            </button>
-          </div>
         ) : (
           // Show songs grid - Mobile-first responsive grid
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 lg:gap-6">
-            {searchResults.map((song) => (
-              <SongCard key={song.id} song={song} />
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 lg:gap-6 mt-4">
+            {playlistSongs.map((song) => (
+              <SongCard key={song.id || song._id} song={song} playlist={playlistSongs} />
             ))}
           </div>
         )}

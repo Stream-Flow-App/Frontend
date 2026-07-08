@@ -1,12 +1,13 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { useMusic } from '../context/MusicContext'
 import { useAuth } from '../context/AuthContext'
 import { useAuthGuard } from '../utils/authGuardUtils'
 import { showErrorToast, showSuccessToast } from '../utils/toastUtils'
 import { MUSIC_ACTIONS, createMusicAction } from '../context/MusicContext'
+import { deleteAudioAPI } from '../utils/apiUtils'
 
 export const useSongCard = (song, onAuthRequired, playlist = []) => {
-  const { state, dispatch, playSong, addToQueue } = useMusic()
+  const { state, dispatch, openPlaylistModal } = useMusic()
   const { isAuthenticated } = useAuth()
   const { guardPlayAction, guardFavoriteAction, createGuardedAction } = useAuthGuard(isAuthenticated, onAuthRequired)
 
@@ -25,7 +26,7 @@ export const useSongCard = (song, onAuthRequired, playlist = []) => {
   const isInQueue = state.queue.some((queueSong) => (queueSong.id || queueSong._id) === songId)
 
   // Normalized song object
-  const normalizedSong = {
+  const normalizedSong = useMemo(() => ({
     id: songId,
     title: song.title,
     artist: song.artist || song.singer,
@@ -36,7 +37,11 @@ export const useSongCard = (song, onAuthRequired, playlist = []) => {
     isUploaded: isUploaded,
     genre: song.genre,
     category: song.category
-  }
+  }), [
+    songId, song.title, song.artist, song.singer, song.album, 
+    song.duration, song.cover, song.coverImageUrl, song.url, 
+    song.audioUrl, isUploaded, song.genre, song.category
+  ])
 
   // Menu handling
   useEffect(() => {
@@ -67,13 +72,13 @@ export const useSongCard = (song, onAuthRequired, playlist = []) => {
   const playSongCore = useCallback(() => {
     console.log('playSongCore called for:', song.title) // Debug log
     
-    if (isCurrentSong) {
-      // If it's the current song, just toggle play/pause
+    if (isCurrentSong && state.queue.length > 1) {
+      // If it's the current song and queue is already populated, just toggle play/pause
       console.log('Toggling current song:', isPlaying ? 'pause' : 'play') // Debug log
       dispatch(createMusicAction(MUSIC_ACTIONS.TOGGLE_PLAY))
     } else {
-      // If it's a different song, play it
-      console.log('Playing new song:', song.title) // Debug log
+      // If it's a different song OR the queue is empty (e.g. after page load), populate queue and play
+      console.log('Playing song and setting queue:', song.title) // Debug log
       if (playlist.length > 0) {
         dispatch(createMusicAction(MUSIC_ACTIONS.PLAY_SONG, { 
           song: normalizedSong, 
@@ -88,7 +93,7 @@ export const useSongCard = (song, onAuthRequired, playlist = []) => {
         }))
       }
     }
-  }, [isCurrentSong, isPlaying, playlist, normalizedSong, state.isShuffled, dispatch, song.title])
+  }, [isCurrentSong, isPlaying, playlist, normalizedSong, state.isShuffled, state.queue.length, dispatch, song.title])
 
   const toggleFavoriteCore = useCallback(() => {
     if (isFavorite) {
@@ -121,6 +126,7 @@ export const useSongCard = (song, onAuthRequired, playlist = []) => {
         dispatch(createMusicAction(MUSIC_ACTIONS.ADD_TO_QUEUE, normalizedSong))
         showSuccessToast(`"${song.title}" added to queue`)
       } catch (error) {
+        console.error('Failed to add song to queue:', error)
         showErrorToast('Failed to add song to queue')
       }
     }, {
@@ -159,14 +165,12 @@ export const useSongCard = (song, onAuthRequired, playlist = []) => {
     }
 
     const guardedPlaylistAction = createGuardedAction ? createGuardedAction(() => {
-      console.log('Add to playlist:', song.title)
-      showSuccessToast('Playlist selection coming soon!')
+      openPlaylistModal(song)
     }, {
       errorMessage: 'You must be signed in to manage playlists.',
       authMode: 'signin'
     }) : () => {
-      console.log('Add to playlist:', song.title)
-      showSuccessToast('Playlist selection coming soon!')
+      openPlaylistModal(song)
     }
 
     switch (action) {
@@ -188,12 +192,20 @@ export const useSongCard = (song, onAuthRequired, playlist = []) => {
         break
     }
   }, [
-    normalizedSong, song.title, state.queueIndex, state.queue, 
-    dispatch, isAuthenticated, isUploaded, createGuardedAction
+    normalizedSong, song, state.queueIndex, state.queue, 
+    dispatch, isAuthenticated, isUploaded, createGuardedAction, openPlaylistModal
   ])
 
   // Delete confirmation
-  const confirmDelete = useCallback(() => {
+  const confirmDelete = useCallback(async () => {
+    try {
+      await deleteAudioAPI(songId)
+    } catch (error) {
+      console.error("Failed to delete song from server:", error)
+      showErrorToast("Failed to delete song. Please try again.")
+      return
+    }
+
     if (isCurrentSong) {
       dispatch(createMusicAction(MUSIC_ACTIONS.SET_CURRENT_SONG, null))
       dispatch(createMusicAction(MUSIC_ACTIONS.SET_PLAYING, false))

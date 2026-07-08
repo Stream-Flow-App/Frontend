@@ -3,10 +3,10 @@
 import axios from 'axios'
 
 // API Configuration
-const API_BASE_URL = 'https://stream-flow-api.onrender.com'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 
 // Create axios instance with default config
-const api = axios.create({
+export const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000, // 10 seconds timeout
   headers: {
@@ -51,8 +51,16 @@ export const transformApiSong = (apiSong) => {
     artist: apiSong.singer || 'Unknown Artist',
     album: apiSong.album || '',
     duration: formatDurationFromMs(apiSong.duration),
-    cover: apiSong.coverImageUrl || "https://placehold.co/200x200/EFEFEF/AAAAAA?text=Song+Cover",
-    url: apiSong.audioUrl,
+    cover: (() => {
+      let coverPath = apiSong.coverImageUrl;
+      if (!coverPath) return "https://placehold.co/200x200/EFEFEF/AAAAAA?text=Song+Cover";
+      if (coverPath.startsWith('http')) return coverPath;
+      if (coverPath.includes('/uploads/audio/')) {
+        coverPath = '/uploads/audio/' + coverPath.split('/uploads/audio/')[1];
+      }
+      return `${API_BASE_URL}${coverPath}`;
+    })(),
+    url: `${API_BASE_URL}/audios/stream/${apiSong._id}`,
     genre: apiSong.genre || '',
     category: apiSong.category || '',
     isPrivate: apiSong.isPrivate || false,
@@ -107,14 +115,14 @@ export const parseDurationToMs = (timeString) => {
 };
 
 /**
- * Fetch all songs from API
+ * Fetch all songs from API with pagination and filters
  */
-export const fetchSongs = async () => {
+export const fetchSongs = async (params = { page: 1, limit: 50, genre: 'all', category: 'all', artist: 'all', album: 'all' }) => {
   try {
-    const response = await api.get('/audios')
+    const response = await api.get('/audios', { params })
     
     // Handle different response structures
-    const songsData = response.data?.data?.audios || response.data?.audios || []
+    const songsData = response.data?.audios || response.data?.data?.audios || []
     
     if (!Array.isArray(songsData)) {
       throw new Error('Invalid response format: expected array of songs')
@@ -123,43 +131,31 @@ export const fetchSongs = async () => {
     const transformedSongs = transformApiSongs(songsData)
     console.log(`Successfully fetched ${transformedSongs.length} songs`)
     
-    return transformedSongs
+    return {
+      songs: transformedSongs,
+      totalCount: response.data?.totalCount || songsData.length,
+      totalPages: response.data?.totalPages || 1,
+      currentPage: response.data?.currentPage || 1
+    }
   } catch (error) {
     console.error('Error fetching songs:', error)
     
     // Provide more specific error messages
     if (error.response) {
-      // Server responded with error status
-      const status = error.response.status
-      const message = error.response.data?.message || error.message
-      
-      switch (status) {
-        case 404:
-          throw new Error('Songs not found. The API endpoint may have changed.')
-        case 500:
-          throw new Error('Server error. Please try again later.')
-        case 503:
-          throw new Error('Service temporarily unavailable. Please try again later.')
-        default:
-          throw new Error(`API Error (${status}): ${message}`)
-      }
-    } else if (error.request) {
-      // Network error
-      throw new Error('Network error. Please check your internet connection.')
-    } else {
-      // Other error
-      throw new Error(error.message || 'Unknown error occurred')
+      if (error.response.status === 404) throw new Error('Songs API endpoint not found')
+      if (error.response.status === 500) throw new Error('Server error while fetching songs')
     }
+    throw error
   }
 }
 
 /**
  * Fetch songs with retry logic
  */
-export const fetchSongsWithRetry = async (maxRetries = 3, delay = 1000) => {
+export const fetchSongsWithRetry = async (maxRetries = 3, delay = 1000, params = { page: 1, limit: 50, genre: 'all', category: 'all', artist: 'all', album: 'all' }) => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      return await fetchSongs()
+      return await fetchSongs(params)
     } catch (error) {
       console.log(`Fetch attempt ${attempt} failed:`, error.message)
       
@@ -189,25 +185,35 @@ export const fetchSongById = async (songId) => {
 }
 
 /**
- * Search songs (client-side filtering since API doesn't support search)
+ * Search globally via the backend API (Songs & Playlists)
  */
-export const searchSongs = async (query, limit = 50) => {
+export const searchSongs = async (query, params = { page: 1, limit: 50, genre: 'all', category: 'all', artist: 'all' }) => {
   try {
-    const songs = await fetchSongs()
+    if (!query || query.trim() === '') return { songs: [], playlists: [] };
     
-    if (!query || query.trim() === '') return songs.slice(0, limit)
+    const response = await api.get(`/audios/search`, {
+      params: { q: query, ...params }
+    });
     
-    const searchQuery = query.toLowerCase().trim()
-    const filteredSongs = songs.filter(song =>
-      song.title?.toLowerCase().includes(searchQuery) ||
-      song.artist?.toLowerCase().includes(searchQuery) ||
-      song.genre?.toLowerCase().includes(searchQuery) ||
-      song.album?.toLowerCase().includes(searchQuery)
-    )
+    const songs = response.data?.audios || [];
+    const playlists = response.data?.playlists || [];
+    const users = response.data?.users || [];
+    const albums = response.data?.albums || [];
     
-    return filteredSongs.slice(0, limit)
+    return {
+      songs: songs.map(transformApiSong),
+      playlists: playlists, 
+      users: users,
+      albums: albums,
+      totalSongs: response.data?.totalAudios || 0,
+      totalPlaylists: response.data?.totalPlaylists || 0,
+      totalUsers: response.data?.totalUsers || 0,
+      totalAlbums: response.data?.totalAlbums || 0,
+      currentPage: response.data?.currentPage || 1,
+      totalPages: response.data?.totalPages || 1
+    };
   } catch (error) {
-    console.error('Error searching songs:', error)
+    console.error('Error searching:', error)
     throw error
   }
 }
@@ -236,13 +242,43 @@ export const filterSongsByCategory = (songs, category) => {
  * Get unique genres from songs
  */
 export const getUniqueGenres = (songs) => {
+  const formatGenre = (genre) => {
+    if (!genre) return '';
+    return genre.trim().toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
   const genres = songs
     .map(song => song.genre)
     .filter(Boolean)
+    .map(formatGenre)
     .filter((genre, index, array) => array.indexOf(genre) === index)
     .sort()
   
   return ['all', ...genres]
+}
+
+/**
+ * Get unique artists from songs
+ */
+export const getUniqueArtists = (songs) => {
+  const formatArtist = (artist) => {
+    if (!artist) return '';
+    return artist.trim().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
+  const artists = songs
+    .flatMap(song => {
+      if (Array.isArray(song.singer)) return song.singer;
+      if (typeof song.artist === 'string') return song.artist.split(',').map(s => s.trim());
+      return [];
+    })
+    .filter(Boolean)
+    .filter(a => a !== 'Unknown Artist')
+    .map(formatArtist)
+    .filter((artist, index, array) => array.indexOf(artist) === index)
+    .sort()
+  
+  return artists;
 }
 
 /**
@@ -330,3 +366,60 @@ export const getApiStatus = async () => {
     }
   }
 }
+
+// --- Authenticated Audio Endpoints ---
+
+export const uploadAudioAPI = async (formData) => {
+  try {
+    const response = await api.post('/audios/upload', formData, {
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error uploading audio:', error);
+    throw error;
+  }
+};
+
+export const updateAudioAPI = async (id, formData) => {
+  try {
+    const response = await api.put(`/audios/${id}`, formData, {
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating audio ${id}:`, error);
+    throw error;
+  }
+};
+
+export const deleteAudioAPI = async (id) => {
+  try {
+    const response = await api.delete(`/audios/${id}`, {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting audio ${id}:`, error);
+    throw error;
+  }
+};
+
+export const fetchMyAudiosAPI = async () => {
+  try {
+    const response = await api.get('/audios/mine', {
+      withCredentials: true,
+    });
+    const songsData = response.data?.data?.audios || response.data?.audios || [];
+    return transformApiSongs(songsData);
+  } catch (error) {
+    console.error('Error fetching user audios:', error);
+    throw error;
+  }
+};

@@ -4,8 +4,11 @@ import { Heart } from 'lucide-react'
 export default function SongInfo({ currentSong, isFavorite, onFavorite }) {
     const displayTitle = currentSong.title || "Unknown Title"
     const displayArtist = currentSong.artist || currentSong.singer || "Unknown Artist"
-    const displayCover = currentSong.cover || currentSong.coverImageUrl ||
-        "https://placehold.co/48x48/EFEFEF/AAAAAA?text=Cover"
+    const rawCover = currentSong.cover || currentSong.coverImageUrl
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
+    const displayCover = rawCover
+        ? rawCover.startsWith('/uploads/') ? `${API_BASE}${rawCover}` : rawCover
+        : "https://placehold.co/48x48/EFEFEF/AAAAAA?text=Cover"
 
     return (
         <div className="flex items-center justify-between sm:justify-start sm:space-x-3 sm:w-50 sm:min-w-0">
