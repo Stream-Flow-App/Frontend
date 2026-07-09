@@ -2,7 +2,7 @@ import { Heart, X, PanelRightClose } from "lucide-react"
 import { useMusic } from "../../context/MusicContext"
 
 export default function RightSidebar({ isOpen, onClose }) {
-  const { state, dispatch, handleToggleFavorite } = useMusic()
+  const { state, handleToggleFavorite } = useMusic()
 
   const { currentSong } = state
   const isFavorite = currentSong && state.favorites.some((fav) => (fav.id || fav._id) === (currentSong.id || currentSong._id))
