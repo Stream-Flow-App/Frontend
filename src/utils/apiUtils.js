@@ -250,6 +250,9 @@ export const fetchPublicPlaylistsAPI = async () => {
     return response.data?.playlists || [];
   } catch (error) {
     console.error('Error fetching public playlists:', error);
+    return [];
+  }
+};
 
 const GENRE_IMAGE_MAP = {
   'pop': 'https://res.cloudinary.com/dfaylabxu/image/upload/v1783607563/streamflow/genres/ebflgxx9ardxndymykwy.jpg',

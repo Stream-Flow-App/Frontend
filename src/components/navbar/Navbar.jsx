@@ -435,7 +435,7 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
 
                 <Link
                   to="/about"
-                  className={`p-2 rounded-xl transition-colors ${isAbout
+                  className={`hidden sm:block p-2 rounded-xl transition-colors ${isAbout
                     ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
                     : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
                     }`}
@@ -444,7 +444,7 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
                 </Link>
                 <Link
                   to="/privacy"
-                  className={`p-2 rounded-xl transition-colors ${isPrivacy
+                  className={`hidden sm:block p-2 rounded-xl transition-colors ${isPrivacy
                     ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
                     : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
                     }`}
@@ -454,7 +454,7 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
 
                 <Link
                   to="/support"
-                  className={`p-2 rounded-xl transition-colors ${isSupport
+                  className={`hidden sm:block p-2 rounded-xl transition-colors ${isSupport
                     ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
                     : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
                     }`}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { Link, useLocation } from "react-router-dom"
-import { Library, Plus, Heart, X, Upload, ListMusic, ShieldAlert } from "lucide-react"
+import { Library, Plus, Heart, X, Upload, ListMusic, ShieldAlert, Info, Shield, HelpCircle } from "lucide-react"
 import UploadModal from "../uploads/UploadModal"
 import { useMusic } from "../../context/MusicContext"
 import { useAuth } from "../../context/AuthContext"
@@ -321,6 +321,45 @@ export default function Sidebar({ isOpen, onClose }) {
           )}
 
 
+
+          {/* Quick Links for Mobile */}
+          <div className="sm:hidden mt-auto pt-6 px-3 border-t border-gray-200 dark:border-gray-800">
+            <nav className="space-y-1">
+              <Link
+                to="/about"
+                onClick={handleMobileClose}
+                className={`flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${isActive('/about')
+                  ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  }`}
+              >
+                <Info className="w-5 h-5" />
+                <span className="font-medium text-sm">About Us</span>
+              </Link>
+              <Link
+                to="/privacy"
+                onClick={handleMobileClose}
+                className={`flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${isActive('/privacy')
+                  ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  }`}
+              >
+                <Shield className="w-5 h-5" />
+                <span className="font-medium text-sm">Privacy Policy</span>
+              </Link>
+              <Link
+                to="/support"
+                onClick={handleMobileClose}
+                className={`flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${isActive('/support')
+                  ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  }`}
+              >
+                <HelpCircle className="w-5 h-5" />
+                <span className="font-medium text-sm">Support</span>
+              </Link>
+            </nav>
+          </div>
 
           {/* MOBILE: Bottom spacing for better UX */}
           <div className="pb-36 lg:pb-20 flex-shrink-0">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { authApi } from '../../utils/authUtils';
 import { ShieldCheck, Music, Clock, AlertCircle } from 'lucide-react';
 
 export default function ArtistApplicationForm() {
@@ -33,29 +34,25 @@ export default function ArtistApplicationForm() {
     // Check existing application
     const checkApplication = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/applications/mine`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-          }
-        });
+        const res = await authApi.get(`/api/applications/mine`);
         
-        if (res.ok) {
-          const data = await res.json();
-          if (data.application) {
-            setApplicationStatus(data.application.status);
-            setReviewNotes(data.application.reviewNotes);
-            if (data.application.status === 'rejected') {
-              // Pre-fill if rejected so they can fix and re-apply
-              setFormData({
-                bio: data.application.bio || '',
-                socialLinks: data.application.socialLinks || { instagram: '', twitter: '' },
-                portfolioLinks: data.application.portfolioLinks || { soundcloud: '', youtube: '', spotify: '' }
-              });
-            }
+        if (res.data && res.data.application) {
+          const application = res.data.application;
+          setApplicationStatus(application.status);
+          setReviewNotes(application.reviewNotes);
+          if (application.status === 'rejected') {
+            // Pre-fill if rejected so they can fix and re-apply
+            setFormData({
+              bio: application.bio || '',
+              socialLinks: application.socialLinks || { instagram: '', twitter: '' },
+              portfolioLinks: application.portfolioLinks || { soundcloud: '', youtube: '', spotify: '' }
+            });
           }
         }
       } catch (err) {
-        console.error('Failed to check application status:', err);
+        if (err.response && err.response.status !== 404) {
+          console.error('Failed to check application status:', err);
+        }
       } finally {
         setLoading(false);
       }
@@ -69,25 +66,13 @@ export default function ArtistApplicationForm() {
     setSubmitting(true);
     
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/applications/apply`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-        },
-        body: JSON.stringify(formData)
-      });
+      await authApi.post(`/api/applications/apply`, formData);
       
-      if (res.ok) {
-        setApplicationStatus('pending');
-        window.scrollTo(0, 0);
-      } else {
-        const errorData = await res.json();
-        alert(errorData.message || 'Failed to submit application');
-      }
+      setApplicationStatus('pending');
+      window.scrollTo(0, 0);
     } catch (err) {
       console.error(err);
-      alert('Network error. Please try again.');
+      alert(err.response?.data?.message || 'Network error. Please try again.');
     } finally {
       setSubmitting(false);
     }
