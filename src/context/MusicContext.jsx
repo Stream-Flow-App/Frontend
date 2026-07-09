@@ -359,6 +359,7 @@ function musicReducer(state, action) {
 
         const currentSongId = state.currentSong ? createSongId(state.currentSong) : null
         let newQueue, newIsShuffled
+        let newRepeatMode = state.repeatMode
 
         if (state.isShuffled) {
           // Turn off shuffle - restore original order
@@ -366,6 +367,7 @@ function musicReducer(state, action) {
           newIsShuffled = false
         } else {
           // Turn on shuffle
+          newRepeatMode = 'off' // Disable repeat when shuffle is enabled
           const currentSongIndex = currentSongId ? findSongIndex(state.queue, currentSongId) : -1
           let queueToShuffle = [...state.originalPlaylist]
 
@@ -400,6 +402,7 @@ function musicReducer(state, action) {
           queue: newQueue,
           queueIndex: newQueueIndex >= 0 ? newQueueIndex : 0,
           isShuffled: newIsShuffled,
+          repeatMode: newRepeatMode,
           error: null
         }
       }
@@ -420,9 +423,24 @@ function musicReducer(state, action) {
             newRepeatMode = 'off'
         }
 
+        // If repeat is being turned on, disable shuffle
+        let newQueue = state.queue
+        let newQueueIndex = state.queueIndex
+        let isShuffled = state.isShuffled
+
+        if (newRepeatMode !== 'off' && state.isShuffled) {
+          isShuffled = false
+          newQueue = [...state.originalPlaylist]
+          const currentSongId = state.currentSong ? createSongId(state.currentSong) : null
+          newQueueIndex = currentSongId ? findSongIndex(newQueue, currentSongId) : 0
+        }
+
         return {
           ...state,
           repeatMode: newRepeatMode,
+          isShuffled,
+          queue: newQueue,
+          queueIndex: newQueueIndex >= 0 ? newQueueIndex : 0,
           error: null
         }
       }

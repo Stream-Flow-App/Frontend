@@ -13,6 +13,8 @@ export default function AudioPlayer({ onToggleRightSidebar, isRightSidebarOpen }
   const { state, dispatch, playNext, playPrevious, toggleShuffle, toggleRepeat, hasNext, hasPrevious } = useMusic()
   const { currentSong, isPlaying, volume, currentTime, duration, isShuffled, repeatMode, isSkipping } = state
 
+  const audioPlayerRef = React.useRef(null)
+
   // Handle audio events
   const handleTimeUpdate = useCallback((time, dur) => {
     dispatch({ type: 'SET_TIME', payload: time })
@@ -27,10 +29,12 @@ export default function AudioPlayer({ onToggleRightSidebar, isRightSidebarOpen }
     
     if (repeatMode === 'one') {
       console.log('🔁 Repeating current song')
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.seek(0)
+        audioPlayerRef.current.play()
+      }
       dispatch({ type: 'SET_TIME', payload: 0 })
-      setTimeout(() => {
-        dispatch({ type: 'SET_PLAYING', payload: true })
-      }, 50)
+      dispatch({ type: 'SET_PLAYING', payload: true })
     } else if (hasNext()) {
       console.log('⏭️ Playing next song')
       setTimeout(() => playNext(), 100)
@@ -48,6 +52,10 @@ export default function AudioPlayer({ onToggleRightSidebar, isRightSidebarOpen }
 
   // Initialize audio player hook
   const audioPlayer = useAudioPlayer(currentSong, volume, handleTimeUpdate, handleEnded, handleError)
+  
+  React.useEffect(() => {
+    audioPlayerRef.current = audioPlayer
+  }, [audioPlayer])
 
   // ENHANCED: Sync playing state with audio element
   useEffect(() => {
