@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ExternalLink, Check, X, User } from 'lucide-react';
+import { authApi } from '../../utils/authUtils';
 
 export default function AdminApplicationsList() {
   const [applications, setApplications] = useState([]);
@@ -8,14 +9,9 @@ export default function AdminApplicationsList() {
 
   const fetchApplications = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/applications/admin`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setApplications(data.applications);
+      const res = await authApi.get('/api/applications/admin');
+      if (res.data) {
+        setApplications(res.data.applications);
       }
     } catch (err) {
       console.error('Failed to fetch applications:', err);
@@ -41,20 +37,14 @@ export default function AdminApplicationsList() {
 
     setActionLoading(id);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/applications/admin/${id}/review`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ status, reviewNotes })
+      const res = await authApi.patch(`/api/applications/admin/${id}/review`, {
+        status, reviewNotes
       });
 
-      if (res.ok) {
+      if (res.status === 200) {
         setApplications(applications.filter(app => app._id !== id));
       } else {
-        const data = await res.json();
-        alert(data.message || 'Failed to review application');
+        alert(res.data?.message || 'Failed to review application');
       }
     } catch (err) {
       console.error(err);
