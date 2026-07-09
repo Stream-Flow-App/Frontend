@@ -69,8 +69,11 @@ const ImageCardsScroll = ({ items, selected, onSelect, type }) => {
 
   return (
     <div className="relative group flex items-center mb-6 w-full">
-      <button onClick={() => scroll(-1)} className="absolute left-0 z-10 p-2 bg-gradient-to-r from-white/80 dark:from-gray-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity h-full">
-        ◀
+      <button 
+        onClick={() => scroll(-1)} 
+        className="absolute left-2 z-10 w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+      >
+        <span className="text-gray-800 dark:text-gray-200">◀</span>
       </button>
       <div ref={scrollRef} className="flex gap-4 overflow-x-auto scrollbar-hide px-2 py-2 scroll-smooth w-full">
         {items.map(item => {
@@ -95,8 +98,11 @@ const ImageCardsScroll = ({ items, selected, onSelect, type }) => {
           )
         })}
       </div>
-      <button onClick={() => scroll(1)} className="absolute right-0 z-10 p-2 bg-gradient-to-l from-white/80 dark:from-gray-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity h-full">
-        ▶
+      <button 
+        onClick={() => scroll(1)} 
+        className="absolute right-2 z-10 w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+      >
+        <span className="text-gray-800 dark:text-gray-200">▶</span>
       </button>
     </div>
   )
