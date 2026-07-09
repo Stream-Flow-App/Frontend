@@ -145,7 +145,7 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
   const isHome = location.pathname === '/'
 
   // Debounced search callback - only triggers after 500ms of no typing
-  const [debouncedSearch] = useDebouncedCallback(
+  const [debouncedSearch, cancelDebouncedSearch] = useDebouncedCallback(
     async (query) => {
       if (!query.trim()) {
         setSearchResults({ songs: [], playlists: [], users: [], albums: [] })
@@ -239,7 +239,7 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
       }
     }
 
-    if (showUserMenuDesktop || showUserMenuMobile || isMobileSearchOpen) {
+    if (showUserMenuDesktop || showUserMenuMobile || isMobileSearchOpen || isDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside)
       document.addEventListener("keydown", handleEscape)
     }
@@ -249,7 +249,7 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
       document.removeEventListener("keydown", handleEscape)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showUserMenuDesktop, showUserMenuMobile, isMobileSearchOpen])
+  }, [showUserMenuDesktop, showUserMenuMobile, isMobileSearchOpen, isDropdownOpen])
 
   useEffect(() => {
     const handleAuthRequired = () => {
@@ -314,6 +314,9 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
       debouncedSearch(value)
     } else {
       // Immediate clear when search is empty
+      if (cancelDebouncedSearch) cancelDebouncedSearch()
+      setSearchResults({ songs: [], playlists: [], users: [], albums: [] })
+      setIsDropdownOpen(false)
       setIsSearching(false)
       if (onSearch) {
         onSearch("")
@@ -322,7 +325,10 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
   }
 
   const clearSearch = () => {
+    if (cancelDebouncedSearch) cancelDebouncedSearch()
     setLocalSearchQuery("")
+    setSearchResults({ songs: [], playlists: [], users: [], albums: [] })
+    setIsDropdownOpen(false)
     setIsSearching(false)
     if (onSearch) {
       onSearch("")
