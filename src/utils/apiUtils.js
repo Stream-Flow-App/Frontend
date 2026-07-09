@@ -242,7 +242,32 @@ export const filterSongsByCategory = (songs, category) => {
 };
 
 /**
- * Get unique genres from songs
+ * Fetch all public playlists
+ */
+export const fetchPublicPlaylistsAPI = async () => {
+  try {
+    const response = await api.get('/playlists/public');
+    return response.data?.playlists || [];
+  } catch (error) {
+    console.error('Error fetching public playlists:', error);
+    return [];
+  }
+};
+
+const GENRE_IMAGE_MAP = {
+  'pop': 'https://res.cloudinary.com/dfaylabxu/image/upload/v1783607563/streamflow/genres/ebflgxx9ardxndymykwy.jpg',
+  'alternative pop': 'https://res.cloudinary.com/dfaylabxu/image/upload/v1783607563/streamflow/genres/ebflgxx9ardxndymykwy.jpg',
+  'synth-pop': 'https://res.cloudinary.com/dfaylabxu/image/upload/v1783607563/streamflow/genres/ebflgxx9ardxndymykwy.jpg',
+  'hip-hop': 'https://res.cloudinary.com/dfaylabxu/image/upload/v1783607565/streamflow/genres/buemb9st51niubfw1zvs.jpg',
+  'rap': 'https://res.cloudinary.com/dfaylabxu/image/upload/v1783607565/streamflow/genres/buemb9st51niubfw1zvs.jpg',
+  'pop rap': 'https://res.cloudinary.com/dfaylabxu/image/upload/v1783607565/streamflow/genres/buemb9st51niubfw1zvs.jpg',
+  'r&b': 'https://res.cloudinary.com/dfaylabxu/image/upload/v1783607566/streamflow/genres/yktlp8rtezj11lqqsxqc.jpg',
+};
+const DEFAULT_GENRE_IMG = 'https://res.cloudinary.com/dfaylabxu/image/upload/v1783607563/streamflow/genres/ebflgxx9ardxndymykwy.jpg';
+const DEFAULT_ARTIST_IMG = 'https://res.cloudinary.com/dfaylabxu/image/upload/v1783607567/streamflow/genres/wpedlqoypuwvuhmuotao.jpg';
+
+/**
+ * Get unique genres from songs as objects { name, image }
  */
 export const getUniqueGenres = (songs) => {
   const formatGenre = (genre) => {
@@ -250,18 +275,24 @@ export const getUniqueGenres = (songs) => {
     return genre.trim().toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
-  const genres = songs
+  const uniqueGenreNames = songs
     .map(song => song.genre)
     .filter(Boolean)
     .map(formatGenre)
     .filter((genre, index, array) => array.indexOf(genre) === index)
-    .sort()
+    .sort();
   
-  return ['all', ...genres]
+  const allGenreObj = { name: 'all', image: DEFAULT_GENRE_IMG };
+  const genreObjs = uniqueGenreNames.map(name => ({
+    name,
+    image: GENRE_IMAGE_MAP[name.toLowerCase()] || DEFAULT_GENRE_IMG
+  }));
+
+  return [allGenreObj, ...genreObjs];
 }
 
 /**
- * Get unique artists from songs
+ * Get unique artists from songs as objects { name, image }
  */
 export const getUniqueArtists = (songs) => {
   const formatArtist = (artist) => {
@@ -269,19 +300,33 @@ export const getUniqueArtists = (songs) => {
     return artist.trim().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
-  const artists = songs
-    .flatMap(song => {
-      if (Array.isArray(song.singer)) return song.singer;
-      if (typeof song.artist === 'string') return song.artist.split(',').map(s => s.trim());
-      return [];
-    })
-    .filter(Boolean)
-    .filter(a => a !== 'Unknown Artist')
-    .map(formatArtist)
-    .filter((artist, index, array) => array.indexOf(artist) === index)
-    .sort()
-  
-  return artists;
+  const artistMap = new Map();
+
+  songs.forEach(song => {
+    const rawArtists = [];
+    if (Array.isArray(song.singer)) rawArtists.push(...song.singer);
+    else if (typeof song.artist === 'string') rawArtists.push(...song.artist.split(',').map(s => s.trim()));
+    
+    // Check uploadedBy to see if we have a user profile image for them
+    const uploaderImage = song.uploadedBy?.profileImg && song.uploadedBy.profileImg !== 'No Profile Picture' ? song.uploadedBy.profileImg : null;
+
+    rawArtists.forEach(a => {
+      if (!a || a === 'Unknown Artist') return;
+      const formattedName = formatArtist(a);
+      if (!artistMap.has(formattedName)) {
+        artistMap.set(formattedName, {
+          name: formattedName,
+          image: uploaderImage || DEFAULT_ARTIST_IMG
+        });
+      } else if (uploaderImage && artistMap.get(formattedName).image === DEFAULT_ARTIST_IMG) {
+        // Upgrade to real image if found in another song
+        artistMap.set(formattedName, { name: formattedName, image: uploaderImage });
+      }
+    });
+  });
+
+  const sortedArtists = Array.from(artistMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+  return [{ name: 'all', image: DEFAULT_ARTIST_IMG }, ...sortedArtists];
 }
 
 /**
