@@ -19,9 +19,9 @@ export default function ArtistApplicationForm() {
   });
 
   useEffect(() => {
-    // Redirect if not logged in
     if (!user) {
-      navigate('/login?redirect=/apply-artist');
+      window.dispatchEvent(new CustomEvent('auth:required'));
+      navigate('/');
       return;
     }
 

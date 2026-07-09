@@ -15,7 +15,8 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!user || !['admin', 'moderator'].includes(user.role)) {
-      navigate('/login');
+      window.dispatchEvent(new CustomEvent('auth:required'));
+      navigate('/');
     }
   }, [user, navigate]);
 
