@@ -3,6 +3,7 @@ import { useMusic } from '../../context/MusicContext'
 import { useAudioPlayer } from '../../hooks/audioHooks'
 // Removed unused formatTime import
 import { syncPlaybackState } from '../../utils/authUtils'
+import { incrementListenTimes } from '../../utils/apiUtils'
 import PlayerControls from './PlayerControls'
 import SeekBar from './SeekBar'
 import SongInfo from './SongInfo'
@@ -14,6 +15,7 @@ export default function AudioPlayer({ onToggleRightSidebar, isRightSidebarOpen }
   const { currentSong, isPlaying, volume, currentTime, duration, isShuffled, repeatMode, isSkipping } = state
 
   const audioPlayerRef = React.useRef(null)
+  const countedSongIdRef = React.useRef(null)
 
   // Handle audio events
   const handleTimeUpdate = useCallback((time, dur) => {
@@ -69,6 +71,16 @@ export default function AudioPlayer({ onToggleRightSidebar, isRightSidebarOpen }
       if (isPlaying) {
         console.log('🎵 State says playing, starting audio for:', currentSong.title)
         const success = await audioPlayer.play()
+        
+        // Increment play count if playing a new song
+        if (success && currentSong) {
+          const songId = currentSong._id || currentSong.id
+          if (songId && songId !== countedSongIdRef.current) {
+            countedSongIdRef.current = songId
+            incrementListenTimes(songId).catch(err => console.error("Failed to increment play count:", err))
+          }
+        }
+        
         if (!success) {
           console.error('🚫 Failed to start audio playback')
           dispatch({ type: 'SET_PLAYING', payload: false })

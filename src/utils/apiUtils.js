@@ -208,6 +208,19 @@ export const fetchSongById = async (songId) => {
 }
 
 /**
+ * Increment song listen times
+ */
+export const incrementListenTimes = async (songId) => {
+  try {
+    const response = await api.post(`/audios/${songId}/listen`)
+    return response.data
+  } catch (error) {
+    console.error(`Error incrementing listen times for ${songId}:`, error)
+    // Non-critical, so don't throw
+  }
+}
+
+/**
  * Search globally via the backend API (Songs & Playlists)
  */
 export const searchSongs = async (query, params = { page: 1, limit: 50, genre: 'all', category: 'all', artist: 'all' }) => {

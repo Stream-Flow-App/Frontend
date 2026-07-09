@@ -1,5 +1,6 @@
 import { Heart, X, PanelRightClose } from "lucide-react"
 import { useMusic } from "../../context/MusicContext"
+import { formatDurationFromMs } from "../../utils/apiUtils"
 
 export default function RightSidebar({ isOpen, onClose }) {
   const { state, handleToggleFavorite } = useMusic()
@@ -117,7 +118,7 @@ export default function RightSidebar({ isOpen, onClose }) {
                 {/* Duration */}
                 <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200/50 dark:border-gray-700/50 lg:border-t-0 lg:pt-0">
                   <span>Duration</span>
-                  <span className="font-mono">{currentSong.duration}</span>
+                  <span className="font-mono">{formatDurationFromMs(currentSong.duration)}</span>
                 </div>
               </div>
 
