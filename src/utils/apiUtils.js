@@ -246,7 +246,7 @@ export const filterSongsByCategory = (songs, category) => {
  */
 export const fetchPublicPlaylistsAPI = async () => {
   try {
-    const response = await api.get('/playlists/public');
+    const response = await api.get('/api/playlists/public');
     return response.data?.playlists || [];
   } catch (error) {
     console.error('Error fetching public playlists:', error);
