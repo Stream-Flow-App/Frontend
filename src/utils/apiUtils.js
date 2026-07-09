@@ -48,10 +48,13 @@ export const transformApiSong = (apiSong) => {
   
   return {
     id: apiSong._id,
+    _id: apiSong._id,
     title: apiSong.title || 'Unknown Title',
     artist: apiSong.singer || 'Unknown Artist',
     album: apiSong.album || '',
     duration: formatDurationFromMs(apiSong.duration),
+    durationRaw: apiSong.duration, // raw value (ms or seconds) for display
+    plays: apiSong.listenTimes || 0,
     cover: (() => {
       let coverPath = apiSong.coverImageUrl;
       if (!coverPath) return "https://placehold.co/200x200/EFEFEF/AAAAAA?text=Song+Cover";
@@ -65,6 +68,7 @@ export const transformApiSong = (apiSong) => {
     genre: apiSong.genre || '',
     category: apiSong.category || '',
     isPrivate: apiSong.isPrivate || false,
+    status: apiSong.status || 'approved',
     uploadedBy: apiSong.uploadedBy,
     createdAt: apiSong.createdAt,
     isUploaded: false, // This distinguishes API songs from user uploads

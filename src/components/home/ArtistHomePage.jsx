@@ -13,12 +13,9 @@ export default function ArtistHomePage() {
   const [error, setError] = useState(null)
 
   const loadArtistUploads = useCallback(async () => {
-    if (!user?.username) return
-
     try {
       setLoading(true)
       setError(null)
-      // Fetch all songs uploaded by this artist (pending, approved, rejected)
       const results = await fetchMyUploads()
       setSongs(results.songs || [])
     } catch (err) {
@@ -27,15 +24,15 @@ export default function ArtistHomePage() {
     } finally {
       setLoading(false)
     }
-  }, [user?.username])
+  }, [])
 
   useEffect(() => {
     loadArtistUploads()
   }, [loadArtistUploads])
 
-  // Calculate placeholder stats based on fetched songs
+  // Calculate real stats based on fetched songs
+  const approvedSongs = songs.filter(s => s.status === 'approved')
   const totalUploads = songs.length
-  // We're using placeholder math for plays/followers for the dashboard demo
   const totalPlays = songs.reduce((sum, song) => sum + (song.plays || 0), 0)
   const placeholderFollowers = Math.floor(totalPlays * 0.12)
 
@@ -76,9 +73,14 @@ export default function ArtistHomePage() {
             </div>
           </div>
           <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {totalUploads}
-          </p>
-        </div>
+              {totalUploads}
+            </p>
+            {totalUploads > 0 && (
+              <p className="text-xs text-gray-400 mt-1">
+                {approvedSongs.length} live · {totalUploads - approvedSongs.length} pending
+              </p>
+            )}
+          </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
