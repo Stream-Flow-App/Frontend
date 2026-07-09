@@ -9,16 +9,17 @@ import AdminApplicationsList from './AdminApplicationsList';
 import { LayoutDashboard, Users, Music, ShieldAlert, FileText } from 'lucide-react';
 
 export default function AdminDashboard() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user || !['admin', 'moderator'].includes(user.role)) {
       window.dispatchEvent(new CustomEvent('auth:required'));
       navigate('/');
     }
-  }, [user, navigate]);
+  }, [user, navigate, authLoading]);
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },

@@ -59,6 +59,10 @@ export default function AuthenticationModals({ isOpen, onClose, initialMode, onA
   const [isVisible, setIsVisible] = useState(false)
   const [rememberMe, setRememberMe] = useState(true)
 
+  useEffect(() => {
+    setMode(initialMode)
+  }, [initialMode])
+
   // Persistent form values using useState (unchanged)
   const [signInValues, setSignInValues] = useState({
     email: "",

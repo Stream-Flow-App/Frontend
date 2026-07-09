@@ -5,7 +5,7 @@ import { authApi } from '../../utils/authUtils';
 import { ShieldCheck, Music, Clock, AlertCircle } from 'lucide-react';
 
 export default function ArtistApplicationForm() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -19,6 +19,8 @@ export default function ArtistApplicationForm() {
   });
 
   useEffect(() => {
+    if (authLoading) return;
+    
     if (!user) {
       window.dispatchEvent(new CustomEvent('auth:required'));
       navigate('/');
