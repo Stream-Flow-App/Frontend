@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useState, useCallback } from 'react'
 import * as playlistUtils from '../utils/playlistUtils'
 import { fetchFavoritesAPI, toggleFavoriteAPI } from '../utils/apiUtils'
+import { useAuth } from './AuthContext'
 
 // Action Types - Centralized for better maintenance
 // eslint-disable-next-line react-refresh/only-export-components
@@ -706,6 +707,7 @@ const MusicContext = createContext()
 export function MusicProvider({ children }) {
   const [state, dispatch] = useReducer(musicReducer, initialState)
   const [isInitialized, setIsInitialized] = useState(false)
+  const { user } = useAuth()
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -949,7 +951,7 @@ export function MusicProvider({ children }) {
         }
       }
     } catch (error) {
-      console.error('Failed to sync favorite with server', error)
+      console.error('Error toggling favorite:', error)
       // Revert on failure
       if (isCurrentlyFavorite) {
         dispatch(createMusicAction(MUSIC_ACTIONS.ADD_TO_FAVORITES, song))
@@ -958,6 +960,19 @@ export function MusicProvider({ children }) {
       }
     }
   }, [state.favorites])
+
+  // Sync user data when authentication state changes
+  useEffect(() => {
+    if (user) {
+      fetchPlaylists()
+      fetchFavorites()
+    } else {
+      // Clear user-specific data on logout
+      dispatch(createMusicAction(MUSIC_ACTIONS.SET_PLAYLISTS, []))
+      dispatch(createMusicAction(MUSIC_ACTIONS.SET_FAVORITES, []))
+      dispatch(createMusicAction(MUSIC_ACTIONS.SET_UPLOADS, []))
+    }
+  }, [user, fetchPlaylists, fetchFavorites])
   
   const openPlaylistModal = useCallback((song) => {
     dispatch(createMusicAction(MUSIC_ACTIONS.OPEN_PLAYLIST_MODAL, song))
