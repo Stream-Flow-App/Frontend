@@ -335,12 +335,30 @@ export default function HomePage() {
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 px-2 flex items-center justify-between">
                 <span>Featured Playlists</span>
               </h3>
-              <div ref={playlistsScrollRef} className="flex gap-4 overflow-x-auto scrollbar-hide px-2 pb-4 cursor-grab active:cursor-grabbing">
-                {publicPlaylists.map(playlist => (
-                  <div key={playlist._id} className="w-48 sm:w-56 flex-shrink-0">
-                    <PlaylistCard playlist={playlist} />
-                  </div>
-                ))}
+              <div className="relative group flex items-center w-full">
+                <button 
+                  onClick={() => {
+                    if (playlistsScrollRef.current) playlistsScrollRef.current.scrollBy({ left: -300, behavior: 'smooth' })
+                  }} 
+                  className="absolute left-2 z-10 w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+                >
+                  <span className="text-gray-800 dark:text-gray-200">◀</span>
+                </button>
+                <div ref={playlistsScrollRef} className="flex gap-4 overflow-x-auto scrollbar-hide px-2 pb-4 pt-2 scroll-smooth w-full cursor-grab active:cursor-grabbing">
+                  {publicPlaylists.map(playlist => (
+                    <div key={playlist._id} className="w-48 sm:w-56 flex-shrink-0">
+                      <PlaylistCard playlist={playlist} />
+                    </div>
+                  ))}
+                </div>
+                <button 
+                  onClick={() => {
+                    if (playlistsScrollRef.current) playlistsScrollRef.current.scrollBy({ left: 300, behavior: 'smooth' })
+                  }} 
+                  className="absolute right-2 z-10 w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+                >
+                  <span className="text-gray-800 dark:text-gray-200">▶</span>
+                </button>
               </div>
             </div>
           )}
