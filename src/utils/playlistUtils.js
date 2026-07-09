@@ -130,3 +130,20 @@ export const removeSongFromPlaylist = async (playlistId, songId) => {
     throw error;
   }
 };
+
+/**
+ * Clone a public playlist to user's library
+ * @param {string} playlistId - The playlist ID to clone
+ */
+export const clonePlaylist = async (playlistId) => {
+  try {
+    const response = await authApi.post(`${BASE_URL}/clone/${playlistId}`);
+    if (response.data.playlist) {
+      response.data.playlist = transformPlaylist(response.data.playlist);
+    }
+    return response.data;
+  } catch (error) {
+    console.error('Error cloning playlist:', error);
+    throw error;
+  }
+};

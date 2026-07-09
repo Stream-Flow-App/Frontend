@@ -5,7 +5,6 @@ import { useAuth } from "../../context/AuthContext"
 import { useParams, useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
 import * as playlistUtils from "../../utils/playlistUtils"
-import { clonePlaylistAPI } from "../../utils/apiUtils"
 import { useToast } from "../common/Toast"
 
 // Edit Playlist Modal Component
@@ -267,11 +266,12 @@ export default function PlaylistPage() {
     }
     try {
       setIsCloning(true);
-      await clonePlaylistAPI(playlistId);
+      await playlistUtils.clonePlaylist(playlistId);
       showToast('Playlist saved to your library', 'success');
       // Refresh user playlists in background
       state.fetchPlaylists && state.fetchPlaylists();
-    } catch (error) {
+    } catch (e) {
+      console.error(e);
       showToast('Failed to save playlist', 'error');
     } finally {
       setIsCloning(false);
