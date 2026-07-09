@@ -143,9 +143,7 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
 
   // Check if current page is home
   const isHome = location.pathname === '/' || location.pathname === '/browse'
-  const isAbout = location.pathname === '/about'
-  const isPrivacy = location.pathname === '/privacy'
-  const isSupport = location.pathname === '/support'
+
 
   // Debounced search callback - only triggers after 500ms of no typing
   const [debouncedSearch, cancelDebouncedSearch] = useDebouncedCallback(
