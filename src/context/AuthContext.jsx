@@ -174,7 +174,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   const updateUser = (userData) => {
-    setUser(userData)
+    setUser(prev => ({ ...prev, ...userData }))
   }
 
   // Get authentication status (cookies handle the token)

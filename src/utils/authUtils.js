@@ -479,10 +479,13 @@ export const updateProfile = async (profileData, profileImg = null) => {
 
     // The backend returns user data, update local storage
     if (response.data.user) {
-      localStorage.setItem("userData", JSON.stringify(response.data.user));
+      // Merge with existing data to avoid losing any fields
+      const existingData = JSON.parse(localStorage.getItem("userData") || "{}")
+      const mergedUser = { ...existingData, ...response.data.user }
+      localStorage.setItem("userData", JSON.stringify(mergedUser));
       return {
         success: true,
-        user: response.data.user,
+        user: mergedUser,
       };
     }
 
