@@ -217,6 +217,11 @@ export default function PlaylistPage() {
   const playlistSongs = playlist?.audio || playlist?.songs || []
   
   const isOwner = playlist && user && (playlist.owner?._id === user.id || playlist.owner?._id === user._id || playlist.owner === user.id || playlist.owner === user._id)
+  
+  // Check if the user has already cloned this playlist
+  const clonedPlaylist = state.playlists?.find(p => p.originalId === playlistId || p._id === playlistId || p.id === playlistId);
+  // We consider it saved if they have a cloned copy in their library (and they aren't looking at their own copy natively)
+  const isSaved = !!clonedPlaylist;
 
   useEffect(() => {
     let isMounted = true
@@ -266,13 +271,23 @@ export default function PlaylistPage() {
     }
     try {
       setIsCloning(true);
-      await playlistUtils.clonePlaylist(playlistId);
-      showToast('Playlist saved to your library', 'success');
-      // Refresh user playlists in background
-      fetchPlaylists && fetchPlaylists();
+      if (isSaved) {
+        // Remove the cloned copy
+        const cloneId = clonedPlaylist._id || clonedPlaylist.id;
+        await deletePlaylist(cloneId);
+        showToast('Playlist removed from your library', 'success');
+        // Fetch to ensure state is clean, though deletePlaylist might already update it
+        fetchPlaylists && fetchPlaylists();
+      } else {
+        // Clone the public playlist
+        await playlistUtils.clonePlaylist(playlistId);
+        showToast('Playlist saved to your library', 'success');
+        // Refresh user playlists in background
+        fetchPlaylists && fetchPlaylists();
+      }
     } catch (e) {
       console.error(e);
-      showToast('Failed to save playlist', 'error');
+      showToast(isSaved ? 'Failed to remove playlist' : 'Failed to save playlist', 'error');
     } finally {
       setIsCloning(false);
     }
@@ -376,11 +391,24 @@ export default function PlaylistPage() {
               <button
                 onClick={handleClonePlaylist}
                 disabled={isCloning}
-                className="btn-ghost flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl hover:text-purple-600 dark:hover:text-purple-400 text-sm disabled:opacity-50"
-                title="Save to Library"
+                className={`btn-ghost flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-sm disabled:opacity-50 ${
+                  isSaved 
+                    ? "text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30" 
+                    : "hover:text-purple-600 dark:hover:text-purple-400"
+                }`}
+                title={isSaved ? "Remove from Library" : "Save to Library"}
               >
-                <Save className="w-4 h-4" />
-                <span className="hidden xs:inline sm:inline">{isCloning ? 'Saving...' : 'Save'}</span>
+                {isSaved ? (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span className="hidden xs:inline sm:inline">{isCloning ? 'Removing...' : 'Remove'}</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    <span className="hidden xs:inline sm:inline">{isCloning ? 'Saving...' : 'Save'}</span>
+                  </>
+                )}
               </button>
             )}
           </div>

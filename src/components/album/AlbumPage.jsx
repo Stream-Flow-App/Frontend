@@ -20,8 +20,11 @@ export default function AlbumPage() {
   const [isSaving, setIsSaving] = useState(false)
   
   const { isAuthenticated } = useAuth()
-  const { createPlaylist, fetchPlaylists } = useMusic()
+  const { createPlaylist, deletePlaylist, fetchPlaylists, state } = useMusic()
   const { showToast } = useToast()
+
+  const savedAlbumPlaylist = state.playlists?.find(p => p.name === albumName);
+  const isSaved = !!savedAlbumPlaylist;
 
   useEffect(() => {
     const fetchAlbumSongs = async () => {
@@ -75,14 +78,19 @@ export default function AlbumPage() {
     
     try {
       setIsSaving(true);
-      const songIds = songs.map(s => s.id || s._id);
-      await createPlaylist({
-        name: albumName,
-        description: `Album by ${artistName}`,
-        isPublic: false,
-        audio: songIds
-      });
-      showToast('Album saved to your library', 'success');
+      if (isSaved) {
+        await deletePlaylist(savedAlbumPlaylist._id || savedAlbumPlaylist.id);
+        showToast('Album removed from your library', 'success');
+      } else {
+        const songIds = songs.map(s => s.id || s._id);
+        await createPlaylist({
+          name: albumName,
+          description: `Album by ${artistName}`,
+          isPublic: false,
+          audio: songIds
+        });
+        showToast('Album saved to your library', 'success');
+      }
       // Refresh user playlists
       if (fetchPlaylists) {
         fetchPlaylists();
@@ -163,11 +171,19 @@ export default function AlbumPage() {
                 <button
                   onClick={handleSaveAlbum}
                   disabled={isSaving}
-                  className="btn-primary flex items-center space-x-2 px-6 py-2.5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
-                  title="Save album to your library as a playlist"
+                  className={`flex items-center space-x-2 px-6 py-2.5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 ${
+                    isSaved 
+                      ? 'bg-red-500 hover:bg-red-600 text-white' 
+                      : 'btn-primary'
+                  }`}
+                  title={isSaved ? "Remove from Library" : "Save to Library"}
                 >
                   <Save className="w-5 h-5" />
-                  <span className="font-semibold">{isSaving ? 'Saving...' : 'Save to Library'}</span>
+                  <span className="font-semibold">
+                    {isSaving 
+                      ? (isSaved ? 'Removing...' : 'Saving...') 
+                      : (isSaved ? 'Remove from Library' : 'Save to Library')}
+                  </span>
                 </button>
               </div>
             )}
