@@ -71,8 +71,8 @@ export default function AdminApplicationsList() {
       
       <div className="space-y-6">
         {applications.map((app) => (
-          <div key={app._id} className="bg-gray-800 border border-gray-700 rounded-2xl p-6">
-            <div className="flex justify-between items-start">
+          <div key={app._id} className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm dark:shadow-none">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-purple-900/50 rounded-full flex items-center justify-center overflow-hidden border border-purple-500/30">
                   {app.user.profileImg && app.user.profileImg !== 'No Profile Picture' ? (
@@ -82,37 +82,37 @@ export default function AdminApplicationsList() {
                   )}
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">{app.user.name}</h3>
-                  <p className="text-sm text-gray-400">@{app.user.username} • {app.user.email}</p>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">{app.user.name}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">@{app.user.username} • {app.user.email}</p>
                 </div>
               </div>
               
-              <div className="flex space-x-3">
+              <div className="flex space-x-3 w-full md:w-auto">
                 <button
                   onClick={() => handleReview(app._id, 'rejected')}
                   disabled={actionLoading === app._id}
-                  className="px-4 py-2 bg-gray-700 hover:bg-red-600 text-white rounded-lg transition-colors text-sm font-medium flex items-center"
+                  className="flex-1 md:flex-none justify-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-red-600 text-gray-700 dark:text-white hover:text-white rounded-lg transition-colors text-sm font-medium flex items-center"
                 >
                   <X size={16} className="mr-2" /> Reject
                 </button>
                 <button
                   onClick={() => handleReview(app._id, 'approved')}
                   disabled={actionLoading === app._id}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors text-sm font-medium flex items-center"
+                  className="flex-1 md:flex-none justify-center px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors text-sm font-medium flex items-center"
                 >
                   <Check size={16} className="mr-2" /> Approve
                 </button>
               </div>
             </div>
 
-            <div className="mt-6 bg-gray-900/50 rounded-xl p-4 border border-gray-800">
-              <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Artist Bio</h4>
-              <p className="text-gray-300 whitespace-pre-wrap text-sm leading-relaxed">{app.bio}</p>
+            <div className="mt-6 bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 border border-gray-200 dark:border-gray-800">
+              <h4 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Artist Bio</h4>
+              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap text-sm leading-relaxed">{app.bio}</p>
             </div>
 
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-gray-900/50 rounded-xl p-4 border border-gray-800">
-                <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Portfolio Links</h4>
+              <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 border border-gray-200 dark:border-gray-800">
+                <h4 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Portfolio Links</h4>
                 <div className="space-y-2">
                   {app.portfolioLinks.soundcloud && (
                     <a href={app.portfolioLinks.soundcloud} target="_blank" rel="noreferrer" className="flex items-center text-sm text-blue-400 hover:text-blue-300">
@@ -135,8 +135,8 @@ export default function AdminApplicationsList() {
                 </div>
               </div>
 
-              <div className="bg-gray-900/50 rounded-xl p-4 border border-gray-800">
-                <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Social Media</h4>
+              <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 border border-gray-200 dark:border-gray-800">
+                <h4 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Social Media</h4>
                 <div className="space-y-2">
                   {app.socialLinks.instagram && (
                     <a href={app.socialLinks.instagram} target="_blank" rel="noreferrer" className="flex items-center text-sm text-pink-400 hover:text-pink-300">

@@ -83,7 +83,7 @@ export default function AdminUsersList() {
     <div className="animate-fade-in space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div className="flex items-center gap-3">
-          <h2 className="text-2xl font-semibold text-white">Manage Users</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Manage Users</h2>
           <span className="bg-purple-600/20 text-purple-400 px-3 py-1 rounded-full text-sm font-medium border border-purple-500/20">
             {totalUsers || users.length} Users Total
           </span>
@@ -97,15 +97,15 @@ export default function AdminUsersList() {
               setSearch(e.target.value);
               setPage(1); // Reset to first page on new search
             }}
-            className="w-full pl-10 pr-4 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
+            className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
           />
-          <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+          <Search className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400" size={18} />
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900/50">
-        <table className="w-full text-left text-sm text-gray-300">
-          <thead className="bg-gray-800/50 text-gray-400 font-medium">
+      <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 shadow-sm dark:shadow-none">
+        <table className="w-full text-left text-sm text-gray-700 dark:text-gray-300">
+          <thead className="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 font-medium">
             <tr>
               <th className="px-6 py-4">User</th>
               <th className="px-6 py-4">Username</th>
@@ -114,9 +114,9 @@ export default function AdminUsersList() {
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-800">
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
             {users.map((user) => (
-              <tr key={user._id} className="hover:bg-gray-800/30 transition-colors">
+              <tr key={user._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                 <td className="px-6 py-4 flex items-center space-x-3">
                   {user.profileImg && user.profileImg !== 'No Profile Picture' && !user.profileImg.includes('default-profile') ? (
                     <img
@@ -137,7 +137,7 @@ export default function AdminUsersList() {
                       {user.username ? user.username.charAt(0).toUpperCase() : '?'}
                     </span>
                   </div>
-                  <span className="font-medium text-white">{user.name || user.username}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{user.name || user.username}</span>
                 </td>
                 <td className="px-6 py-4">{user.username}</td>
                 <td className="px-6 py-4">{user.email}</td>
@@ -146,7 +146,7 @@ export default function AdminUsersList() {
                     <select
                       value={user.role}
                       onChange={(e) => handleRoleChange(user.username, e.target.value)}
-                      className="bg-gray-800 text-gray-300 border border-gray-700 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2"
+                      className="bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-300 border border-gray-200 dark:border-gray-700 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2"
                     >
                       <option value="user">User</option>
                       <option value="moderator">Moderator</option>
@@ -192,22 +192,22 @@ export default function AdminUsersList() {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex justify-between items-center bg-gray-900/50 border border-gray-800 rounded-xl p-4 mt-4">
-          <span className="text-sm text-gray-400">
+        <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mt-4">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
             Showing Page {page} of {totalPages}
           </span>
           <div className="flex gap-2">
             <button
               onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
               disabled={page === 1}
-              className="p-2 rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft size={20} />
             </button>
             <button
               onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
               disabled={page === totalPages}
-              className="p-2 rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight size={20} />
             </button>
@@ -218,24 +218,24 @@ export default function AdminUsersList() {
       {/* Ban Confirmation Modal */}
       {banningUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 max-w-md w-full shadow-2xl animate-scale-in">
-            <div className="flex items-center space-x-3 text-red-400 mb-4">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 max-w-md w-full shadow-2xl animate-scale-in">
+            <div className="flex items-center space-x-3 text-red-500 dark:text-red-400 mb-4">
               <ShieldAlert size={24} />
-              <h3 className="text-xl font-bold text-white">Manage User Ban</h3>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Manage User Ban</h3>
             </div>
-            <p className="text-gray-400 mb-6">
-              You are managing the suspension for <span className="font-semibold text-white">{banningUser.username}</span>.
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              You are managing the suspension for <span className="font-semibold text-gray-900 dark:text-white">{banningUser.username}</span>.
               {banningUser.bannedUntil && new Date(banningUser.bannedUntil) > new Date() && (
-                <span className="block mt-2 text-yellow-400">Currently banned until: {new Date(banningUser.bannedUntil).toLocaleString()}</span>
+                <span className="block mt-2 text-yellow-600 dark:text-yellow-400">Currently banned until: {new Date(banningUser.bannedUntil).toLocaleString()}</span>
               )}
             </p>
             
             <div className="mb-6">
-              <label className="block mb-2 text-sm font-medium text-gray-300">Ban Duration</label>
+              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Ban Duration</label>
               <select
                 value={banDuration}
                 onChange={(e) => setBanDuration(e.target.value)}
-                className="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-red-500 focus:border-red-500 block w-full p-2.5"
+                className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-red-500 focus:border-red-500 block w-full p-2.5"
               >
                 <option value="24">24 Hours</option>
                 <option value="168">7 Days</option>
@@ -248,7 +248,7 @@ export default function AdminUsersList() {
             <div className="flex space-x-3 justify-end">
               <button
                 onClick={() => setBanningUser(null)}
-                className="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-colors"
+                className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 Cancel
               </button>

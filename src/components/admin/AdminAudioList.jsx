@@ -59,9 +59,9 @@ export default function AdminAudioList() {
         </span>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900/50">
-        <table className="w-full text-left text-sm text-gray-300">
-          <thead className="bg-gray-800/50 text-gray-400 font-medium">
+      <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 shadow-sm dark:shadow-none">
+        <table className="w-full text-left text-sm text-gray-700 dark:text-gray-300">
+          <thead className="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 font-medium">
             <tr>
               <th className="px-6 py-4">Title</th>
               <th className="px-6 py-4">Singer</th>
@@ -70,9 +70,9 @@ export default function AdminAudioList() {
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-800">
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
             {audios.map((audio) => (
-              <tr key={audio._id} className="hover:bg-gray-800/30 transition-colors group">
+              <tr key={audio._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors group">
                 <td className="px-6 py-4 flex items-center space-x-3">
                   <div className="relative w-10 h-10 rounded-md overflow-hidden bg-gray-800 border border-gray-700">
                     <img
@@ -87,7 +87,7 @@ export default function AdminAudioList() {
                       <PlayCircle className="text-white" size={20} />
                     </button>
                   </div>
-                  <span className="font-medium text-white">{audio.title}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{audio.title}</span>
                 </td>
                 <td className="px-6 py-4">{audio.singer}</td>
                 <td className="px-6 py-4 capitalize">{audio.genre}</td>
@@ -133,18 +133,18 @@ export default function AdminAudioList() {
       {/* Delete Confirmation Modal */}
       {deletingAudio && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 max-w-md w-full shadow-2xl animate-scale-in">
-            <div className="flex items-center space-x-3 text-red-400 mb-4">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 max-w-md w-full shadow-2xl animate-scale-in">
+            <div className="flex items-center space-x-3 text-red-500 dark:text-red-400 mb-4">
               <AlertTriangle size={24} />
-              <h3 className="text-xl font-bold text-white">Delete Audio Track</h3>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Delete Audio Track</h3>
             </div>
-            <p className="text-gray-400 mb-6">
-              Are you sure you want to delete <span className="font-semibold text-white">{deletingAudio.title}</span>? This action is permanent and will remove it from all user playlists.
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Are you sure you want to delete <span className="font-semibold text-gray-900 dark:text-white">{deletingAudio.title}</span>? This action is permanent and will remove it from all user playlists.
             </p>
             <div className="flex space-x-3 justify-end">
               <button
                 onClick={() => setDeletingAudio(null)}
-                className="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-colors"
+                className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 Cancel
               </button>

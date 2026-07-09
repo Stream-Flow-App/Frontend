@@ -68,12 +68,12 @@ export default function AdminModerationTab() {
   return (
     <div className="animate-fade-in space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h2 className="text-2xl font-semibold text-white">Moderation Queue</h2>
-        <div className="flex bg-gray-800 p-1 rounded-xl">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Moderation Queue</h2>
+        <div className="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-xl">
           <button
             onClick={() => setView('audio')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              isAudioView ? 'bg-purple-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'
+              isAudioView ? 'bg-purple-600 text-white shadow-lg' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             Audio Tracks ({pendingAudios.length})
@@ -81,7 +81,7 @@ export default function AdminModerationTab() {
           <button
             onClick={() => setView('album')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              !isAudioView ? 'bg-purple-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'
+              !isAudioView ? 'bg-purple-600 text-white shadow-lg' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             Albums ({pendingAlbums.length})
@@ -90,15 +90,15 @@ export default function AdminModerationTab() {
       </div>
 
       {currentItems.length === 0 ? (
-        <div className="text-center py-16 bg-gray-900/50 rounded-xl border border-gray-800">
+        <div className="text-center py-16 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-800">
           <CheckCircle className="mx-auto h-12 w-12 text-emerald-500/50 mb-4" />
-          <h3 className="text-lg font-medium text-white mb-2">All caught up!</h3>
-          <p className="text-gray-400">There are no pending {isAudioView ? 'audio tracks' : 'albums'} to review.</p>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">All caught up!</h3>
+          <p className="text-gray-500 dark:text-gray-400">There are no pending {isAudioView ? 'audio tracks' : 'albums'} to review.</p>
         </div>
       ) : (
         <div className="grid gap-4">
           {currentItems.map((item) => (
-            <div key={item._id} className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 flex items-center justify-between gap-4">
+            <div key={item._id} className="bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-4 flex-1 min-w-0">
                 <img
                   src={isAudioView
@@ -106,25 +106,25 @@ export default function AdminModerationTab() {
                     : (item.cover ? (item.cover.startsWith('/uploads/') ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${item.cover}` : item.cover) : '/assets/images/default-cover.jpg')
                   }
                   alt={item.title || item.name}
-                  className="w-16 h-16 rounded-lg object-cover border border-gray-700 flex-shrink-0"
+                  className="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-medium text-white truncate">{item.title || item.name}</h3>
-                  <p className="text-gray-400 text-sm truncate">
-                    Uploaded by: <span className="text-gray-300 font-medium">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white truncate">{item.title || item.name}</h3>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm truncate">
+                    Uploaded by: <span className="text-gray-700 dark:text-gray-300 font-medium">
                       {isAudioView ? (item.uploadedBy?.username || 'Unknown') : (item.owner?.username || 'Unknown')}
                     </span>
                   </p>
                   {isAudioView && (
                     <div className="flex gap-2 mt-2 text-xs">
-                      <span className="bg-gray-800 text-gray-300 px-2 py-0.5 rounded border border-gray-700">{item.genre}</span>
-                      <span className="bg-gray-800 text-gray-300 px-2 py-0.5 rounded border border-gray-700">{item.category}</span>
+                      <span className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700">{item.genre}</span>
+                      <span className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700">{item.category}</span>
                     </div>
                   )}
                   {!isAudioView && (
                     <div className="flex gap-2 mt-2 text-xs">
-                      <span className="bg-gray-800 text-gray-300 px-2 py-0.5 rounded border border-gray-700">Album</span>
-                      <span className="text-gray-400">{item.audio?.length || 0} tracks</span>
+                      <span className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700">Album</span>
+                      <span className="text-gray-500 dark:text-gray-400">{item.audio?.length || 0} tracks</span>
                     </div>
                   )}
                 </div>

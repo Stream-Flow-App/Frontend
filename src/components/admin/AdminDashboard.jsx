@@ -39,7 +39,7 @@ export default function AdminDashboard() {
         <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
           Admin Dashboard
         </h1>
-        <p className="text-gray-400 mt-2">Manage your platform's users and content</p>
+        <p className="text-gray-500 dark:text-gray-400 mt-2">Manage your platform's users and content</p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-8">
@@ -56,7 +56,7 @@ export default function AdminDashboard() {
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
                       ? 'bg-gradient-to-bl from-purple-600 via-purple-600 to-blue-600 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]'
-                      : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                   }`}
                 >
                   <Icon size={20} />
