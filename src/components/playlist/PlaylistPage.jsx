@@ -1,10 +1,12 @@
-import { ListMusic, Edit2, Trash2, X, Search, Globe, Lock, Share2, Copy, Check } from "lucide-react"
+import { ListMusic, Edit2, Trash2, X, Search, Globe, Lock, Share2, Copy, Check, Save } from "lucide-react"
 import SongCard from "../songCard/SongCard.jsx"
 import { useMusic } from "../../context/MusicContext"
 import { useAuth } from "../../context/AuthContext"
 import { useParams, useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
 import * as playlistUtils from "../../utils/playlistUtils"
+import { clonePlaylistAPI } from "../../utils/apiUtils"
+import { useToast } from "../common/Toast"
 
 // Edit Playlist Modal Component
 const EditPlaylistModal = ({ isOpen, onClose, playlist, onUpdatePlaylist }) => {
@@ -196,12 +198,14 @@ const DeletePlaylistModal = ({ isOpen, onClose, playlist, onConfirmDelete }) => 
 
 export default function PlaylistPage() {
   const { state, deletePlaylist, updatePlaylist } = useMusic()
-  const { user } = useAuth()
+  const { user, isAuthenticated } = useAuth()
   const { playlistId } = useParams()
   const navigate = useNavigate()
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [isCloning, setIsCloning] = useState(false)
+  const { showToast } = useToast()
   
   const [fetchedPlaylist, setFetchedPlaylist] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -255,6 +259,24 @@ export default function PlaylistPage() {
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
+
+  const handleClonePlaylist = async () => {
+    if (!isAuthenticated) {
+      window.dispatchEvent(new CustomEvent('auth:required'));
+      return;
+    }
+    try {
+      setIsCloning(true);
+      await clonePlaylistAPI(playlistId);
+      showToast('Playlist saved to your library', 'success');
+      // Refresh user playlists in background
+      state.fetchPlaylists && state.fetchPlaylists();
+    } catch (error) {
+      showToast('Failed to save playlist', 'error');
+    } finally {
+      setIsCloning(false);
+    }
+  };
 
   // Handle loading state
   if (isLoading && !playlist) {
@@ -348,6 +370,18 @@ export default function PlaylistPage() {
                   <span className="hidden xs:inline sm:inline">Delete</span>
                 </button>
               </>
+            )}
+            
+            {isAuthenticated && !isOwner && (
+              <button
+                onClick={handleClonePlaylist}
+                disabled={isCloning}
+                className="btn-ghost flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl hover:text-purple-600 dark:hover:text-purple-400 text-sm disabled:opacity-50"
+                title="Save to Library"
+              >
+                <Save className="w-4 h-4" />
+                <span className="hidden xs:inline sm:inline">{isCloning ? 'Saving...' : 'Save'}</span>
+              </button>
             )}
           </div>
         </div>

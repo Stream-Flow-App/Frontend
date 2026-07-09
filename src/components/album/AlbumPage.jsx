@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { PuffLoader } from 'react-spinners'
-import { Disc, Music } from "lucide-react"
+import { Disc, Music, Save } from "lucide-react"
 import SongCard from "../songCard/SongCard.jsx"
 import { fetchSongsWithRetry } from "../../utils/apiUtils"
+import { useAuth } from "../../context/AuthContext"
+import { useMusic } from "../../context/MusicContext"
+import { createPlaylist } from "../../utils/playlistUtils"
+import { useToast } from "../common/Toast"
 
 export default function AlbumPage() {
   const { albumName } = useParams()
@@ -14,6 +18,11 @@ export default function AlbumPage() {
   const [error, setError] = useState(null)
   const [artistName, setArtistName] = useState('Various Artists')
   const [albumCover, setAlbumCover] = useState(null)
+  const [isSaving, setIsSaving] = useState(false)
+  
+  const { isAuthenticated } = useAuth()
+  const { state } = useMusic()
+  const { showToast } = useToast()
 
   useEffect(() => {
     const fetchAlbumSongs = async () => {
@@ -58,6 +67,34 @@ export default function AlbumPage() {
       fetchAlbumSongs()
     }
   }, [albumName])
+
+  const handleSaveAlbum = async () => {
+    if (!isAuthenticated) {
+      window.dispatchEvent(new CustomEvent('auth:required'));
+      return;
+    }
+    
+    try {
+      setIsSaving(true);
+      const songIds = songs.map(s => s.id || s._id);
+      await createPlaylist({
+        name: albumName,
+        description: `Album by ${artistName}`,
+        isPublic: false,
+        audio: songIds
+      });
+      showToast('Album saved to your library', 'success');
+      // Refresh user playlists
+      if (state.fetchPlaylists) {
+        state.fetchPlaylists();
+      }
+    } catch (err) {
+      console.error('Failed to save album:', err);
+      showToast('Failed to save album', 'error');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -121,6 +158,20 @@ export default function AlbumPage() {
                 <span>{songs.length} {songs.length === 1 ? 'Track' : 'Tracks'}</span>
               </div>
             </div>
+            
+            {isAuthenticated && (
+              <div className="mt-4 flex justify-center sm:justify-start">
+                <button
+                  onClick={handleSaveAlbum}
+                  disabled={isSaving}
+                  className="btn-primary flex items-center space-x-2 px-6 py-2.5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+                  title="Save album to your library as a playlist"
+                >
+                  <Save className="w-5 h-5" />
+                  <span className="font-semibold">{isSaving ? 'Saving...' : 'Save to Library'}</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

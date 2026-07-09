@@ -243,11 +243,25 @@ export default function Sidebar({ isOpen, onClose }) {
             </div>
           </div>
 
-          {/* MOBILE: Library Items with better touch targets */}
-          <div className="py-2">
-            <nav className="space-y-1">
-              {libraryItems.map((item) => (
-                <Link
+          {!isAuthenticated ? (
+            <div className="flex-1 flex flex-col items-center justify-center px-4 text-center mt-12 space-y-4">
+              <Library className="w-12 h-12 text-gray-400 dark:text-gray-600 mb-2" />
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Log in to view your library</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Save your favorite songs and create playlists.</p>
+              <button 
+                onClick={() => window.dispatchEvent(new CustomEvent('auth:required'))}
+                className="mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-full transition-colors"
+              >
+                Log In
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* MOBILE: Library Items with better touch targets */}
+              <div className="py-2">
+                <nav className="space-y-1">
+                  {libraryItems.map((item) => (
+                    <Link
                   key={item.path}
                   to={item.path}
                   onClick={handleMobileClose}
@@ -303,6 +317,8 @@ export default function Sidebar({ isOpen, onClose }) {
               ))}
             </nav>
           </div>
+          </>
+          )}
 
 
 

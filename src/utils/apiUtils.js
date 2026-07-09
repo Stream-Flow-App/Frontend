@@ -253,7 +253,18 @@ export const fetchPublicPlaylistsAPI = async () => {
     return [];
   }
 };
-
+/**
+ * Clone a public playlist to user's library
+ */
+export const clonePlaylistAPI = async (playlistId) => {
+  try {
+    const response = await api.post(`/api/playlists/clone/${playlistId}`);
+    return response.data?.playlist;
+  } catch (error) {
+    console.error('Error cloning playlist:', error);
+    throw error;
+  }
+};
 const GENRE_IMAGE_MAP = {
   'pop': 'https://res.cloudinary.com/dfaylabxu/image/upload/v1783607563/streamflow/genres/ebflgxx9ardxndymykwy.jpg',
   'alternative pop': 'https://res.cloudinary.com/dfaylabxu/image/upload/v1783607563/streamflow/genres/ebflgxx9ardxndymykwy.jpg',
