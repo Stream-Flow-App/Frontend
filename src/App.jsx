@@ -21,6 +21,8 @@ import AdminRoute from "./components/layout/AdminRoute"
 import AdminDashboard from "./components/admin/AdminDashboard"
 import LandingPage from "./components/home/LandingPage"
 import ArtistApplicationForm from "./components/home/ArtistApplicationForm"
+import PrivacyPolicyPage from "./components/home/PrivacyPolicyPage"
+import SupportPage from "./components/home/SupportPage"
 import "./index.css"
 
 const router = createBrowserRouter([
@@ -76,6 +78,22 @@ const router = createBrowserRouter([
         element: (
           <MusicErrorBoundary fallbackMessage="There was an issue loading the application form">
             <ArtistApplicationForm />
+          </MusicErrorBoundary>
+        ) 
+      },
+      { 
+        path: 'privacy', 
+        element: (
+          <MusicErrorBoundary fallbackMessage="There was an issue loading the privacy policy page">
+            <PrivacyPolicyPage />
+          </MusicErrorBoundary>
+        ) 
+      },
+      { 
+        path: 'support', 
+        element: (
+          <MusicErrorBoundary fallbackMessage="There was an issue loading the support page">
+            <SupportPage />
           </MusicErrorBoundary>
         ) 
       },

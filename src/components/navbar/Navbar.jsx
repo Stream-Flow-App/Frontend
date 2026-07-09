@@ -8,7 +8,7 @@ import { searchSongs } from "../../utils/apiUtils"
 import { useDebouncedCallback } from "../../hooks/useDebounce"
 import { PuffLoader } from 'react-spinners'
 import logoImage from "../../assets/logo_transparent.png"
-import { Search, Home, Menu, Sun, Moon, User, Settings, LogOut, X, ShieldAlert, Play, Disc, Info } from "lucide-react"
+import { Search, Home, Menu, Sun, Moon, User, Settings, LogOut, X, ShieldAlert, Play, Disc, Info, Shield, HelpCircle } from "lucide-react"
 import AuthenticationModals from "../authentication/AuthenticationModals"
 
 const getMediaUrl = (url) => {
@@ -144,6 +144,8 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
   // Check if current page is home
   const isHome = location.pathname === '/' || location.pathname === '/browse'
   const isAbout = location.pathname === '/about'
+  const isPrivacy = location.pathname === '/privacy'
+  const isSupport = location.pathname === '/support'
 
   // Debounced search callback - only triggers after 500ms of no typing
   const [debouncedSearch, cancelDebouncedSearch] = useDebouncedCallback(
@@ -440,6 +442,25 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
                 >
                   <Info className="w-5 h-5" />
                 </Link>
+                <Link
+                  to="/privacy"
+                  className={`p-2 rounded-xl transition-colors ${isPrivacy
+                    ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
+                    }`}
+                >
+                  <Shield className="w-5 h-5" />
+                </Link>
+
+                <Link
+                  to="/support"
+                  className={`p-2 rounded-xl transition-colors ${isSupport
+                    ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
+                    }`}
+                >
+                  <HelpCircle className="w-5 h-5" />
+                </Link>
               </div>
 
               {/* Center: Logo + App Name */}
@@ -643,6 +664,28 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
                     />
                   </div>
                 </div>
+
+                <Link
+                  to="/privacy"
+                  title="Privacy Policy"
+                  className={`p-3 rounded-xl transition-all duration-300 transform hover:scale-110 ${isPrivacy
+                    ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
+                    }`}
+                >
+                  <Shield className="w-5 h-5" />
+                </Link>
+
+                <Link
+                  to="/support"
+                  title="Support"
+                  className={`p-3 rounded-xl transition-all duration-300 transform hover:scale-110 ${isSupport
+                    ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
+                    }`}
+                >
+                  <HelpCircle className="w-5 h-5" />
+                </Link>
               </div>
 
               {/* Right side: Theme + Auth */}
