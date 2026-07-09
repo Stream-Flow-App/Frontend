@@ -44,7 +44,7 @@ export default function SongCover({
             <img
                 src={displayCover}
                 alt={`${displayTitle} cover`}
-                className="w-full aspect-square object-cover rounded-md sm:rounded-lg"
+                className="w-full aspect-square object-cover rounded-md sm:rounded-lg ambient-shadow"
                 onError={(e) => {
                     e.target.src = "https://placehold.co/200x200/EFEFEF/AAAAAA?text=Song+Cover"
                 }}

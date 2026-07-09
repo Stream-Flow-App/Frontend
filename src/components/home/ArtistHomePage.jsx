@@ -1,0 +1,142 @@
+import { useState, useEffect, useCallback } from "react"
+import { useAuth } from "../../context/AuthContext"
+import { Play, Music, Users } from "lucide-react"
+import { fetchSongsWithRetry } from "../../utils/apiUtils.js"
+import SongCard from "../songCard/SongCard.jsx"
+import SongCardSkeleton from "../common/SongCardSkeleton.jsx"
+import { ToastContainer } from "../common/Toast"
+
+export default function ArtistHomePage() {
+  const { user } = useAuth()
+  const [songs, setSongs] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  const loadArtistUploads = useCallback(async () => {
+    if (!user?.username) return
+
+    try {
+      setLoading(true)
+      setError(null)
+      // Fetch only songs uploaded by this artist
+      const results = await fetchSongsWithRetry(3, 1000, { 
+        page: 1, 
+        limit: 50, 
+        artist: user.username 
+      })
+      setSongs(results.songs || [])
+    } catch (err) {
+      console.error(err)
+      setError('Failed to load your uploads')
+    } finally {
+      setLoading(false)
+    }
+  }, [user?.username])
+
+  useEffect(() => {
+    loadArtistUploads()
+  }, [loadArtistUploads])
+
+  // Calculate placeholder stats based on fetched songs
+  const totalUploads = songs.length
+  // We're using placeholder math for plays/followers for the dashboard demo
+  const totalPlays = songs.reduce((sum, song) => sum + (song.plays || 0), 0)
+  const placeholderFollowers = Math.floor(totalPlays * 0.12)
+
+  return (
+    <div className="space-y-6 md:space-y-8 animate-fade-in">
+      {/* Welcome Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-600 to-indigo-600 p-8 sm:p-10 text-white shadow-xl">
+        <div className="relative z-10">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+            Welcome back, {user?.name || user?.username || 'Artist'}!
+          </h1>
+          <p className="text-purple-100 max-w-2xl text-lg">
+            This is your artist dashboard. Track your performance, manage your uploads, and connect with your audience.
+          </p>
+        </div>
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
+      </div>
+
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-gray-500 dark:text-gray-400 font-medium">Total Plays</h3>
+            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400">
+              <Play className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            {totalPlays.toLocaleString()}
+          </p>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-gray-500 dark:text-gray-400 font-medium">Your Uploads</h3>
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
+              <Music className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            {totalUploads}
+          </p>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-gray-500 dark:text-gray-400 font-medium">Followers</h3>
+            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg text-green-600 dark:text-green-400">
+              <Users className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            {placeholderFollowers.toLocaleString()}
+          </p>
+        </div>
+      </div>
+
+      {/* Recent Uploads Section */}
+      <div className="pt-4">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            Your Uploads
+          </h2>
+        </div>
+
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 lg:gap-6">
+            {[...Array(5)].map((_, i) => <SongCardSkeleton key={i} />)}
+          </div>
+        ) : error ? (
+          <div className="text-center py-10 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
+            <p className="text-red-500 mb-4">{error}</p>
+            <button 
+              onClick={loadArtistUploads}
+              className="px-6 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : songs.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 lg:gap-6">
+            {songs.map((song) => (
+              <SongCard key={song.id || song._id} song={song} songs={songs} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
+            <Music className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Uploads Yet</h3>
+            <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+              You haven't uploaded any songs yet. Use the Upload button in the sidebar to share your first track!
+            </p>
+          </div>
+        )}
+      </div>
+      
+      <ToastContainer />
+    </div>
+  )
+}

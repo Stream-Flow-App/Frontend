@@ -21,7 +21,7 @@ export default function ArtistPage() {
       try {
         setLoading(true)
         setError(null)
-        const response = await api.get(`/public/${username}`)
+        const response = await api.get(`/api/users/public/${username}`)
         
         if (response.data?.user) {
           setArtist(response.data.user)
@@ -33,7 +33,7 @@ export default function ArtistPage() {
               ? apiSong.singer.join(', ') 
               : apiSong.singer || 'Unknown Artist',
             album: apiSong.album || 'Unknown Album',
-            coverUrl: apiSong.coverImageUrl || '/default-cover.png',
+            coverImageUrl: apiSong.coverImageUrl || '/default-cover.png',
             audioUrl: apiSong.audioUrl,
             duration: apiSong.duration || '0:00',
             durationSeconds: apiSong.durationSeconds || 0,
@@ -134,7 +134,7 @@ export default function ArtistPage() {
         <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Popular Releases</h2>
         
         {audios.length > 0 ? (
-          <div className="space-y-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5 lg:gap-6">
             {audios.map((song, idx) => (
               <SongCard 
                 key={song.id} 

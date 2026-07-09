@@ -6,18 +6,18 @@ export function SongCardSkeleton({ count = 8 }) {
     return (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
             {Array.from({ length: count }, (_, i) => (
-                <div key={i} className="bg-white dark:bg-gray-800 rounded-lg p-2 sm:p-3 shadow-md border border-gray-100 dark:border-gray-700 animate-pulse">
+                <div key={i} className="glass-panel rounded-3xl p-3 sm:p-4 animate-shimmer bg-gradient-to-r from-surface-panel via-surface-border to-surface-panel bg-[length:1000px_100%]">
                     {/* Cover image skeleton */}
-                    <div className="w-full aspect-square bg-gray-200 dark:bg-gray-700 rounded-md sm:rounded-lg mb-2 sm:mb-3"></div>
+                    <div className="w-full aspect-square bg-white/10 rounded-md sm:rounded-lg mb-2 sm:mb-3"></div>
 
                     {/* Title skeleton */}
-                    <div className="h-3 sm:h-4 bg-gray-200 dark:bg-gray-700 rounded mb-1 sm:mb-2"></div>
+                    <div className="h-3 sm:h-4 bg-white/10 rounded mb-1 sm:mb-2"></div>
 
                     {/* Artist skeleton */}
-                    <div className="h-2 sm:h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                    <div className="h-2 sm:h-3 bg-white/10 rounded w-3/4 mb-2"></div>
 
                     {/* Duration skeleton */}
-                    <div className="h-2 sm:h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                    <div className="h-2 sm:h-3 bg-white/10 rounded w-1/4"></div>
                 </div>
             ))}
         </div>
@@ -27,15 +27,15 @@ export function SongCardSkeleton({ count = 8 }) {
 // Loading state for audio player
 export function AudioPlayerSkeleton() {
     return (
-        <div className="bg-white/95 dark:bg-gray-800/95 border-t border-gray-200/50 dark:border-gray-700/50 px-3 py-2 sm:px-4 lg:px-6 backdrop-blur-lg shadow-2xl w-full animate-pulse">
+        <div className="glass-panel px-2 py-2 sm:px-4 lg:px-6 w-full rounded-2xl sm:rounded-3xl animate-shimmer bg-gradient-to-r from-surface-panel via-surface-border to-surface-panel bg-[length:1000px_100%]">
             <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
 
                 {/* Song info skeleton */}
                 <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-lg"></div>
                     <div className="min-w-0 flex-1">
-                        <div className="h-3 sm:h-4 bg-gray-200 dark:bg-gray-700 rounded mb-1"></div>
-                        <div className="h-2 sm:h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+                        <div className="h-3 sm:h-4 bg-white/10 rounded mb-1"></div>
+                        <div className="h-2 sm:h-3 bg-white/10 rounded w-2/3"></div>
                     </div>
                 </div>
 
@@ -43,21 +43,21 @@ export function AudioPlayerSkeleton() {
                 <div className="flex flex-col space-y-2 sm:space-y-1 flex-1 sm:max-w-md">
                     <div className="flex items-center justify-center space-x-2 sm:space-x-4">
                         {Array.from({ length: 5 }, (_, i) => (
-                            <div key={i} className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                            <div key={i} className="w-8 h-8 sm:w-10 sm:h-10 bg-white/10 rounded-full"></div>
                         ))}
                     </div>
                     <div className="flex items-center space-x-2 sm:space-x-3 w-full">
-                        <div className="w-8 sm:w-10 h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                        <div className="flex-1 h-1 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                        <div className="w-8 sm:w-10 h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                        <div className="w-8 sm:w-10 h-3 bg-white/10 rounded"></div>
+                        <div className="flex-1 h-1 bg-white/10 rounded"></div>
+                        <div className="w-8 sm:w-10 h-3 bg-white/10 rounded"></div>
                     </div>
                 </div>
 
                 {/* Right controls skeleton */}
                 <div className="hidden sm:flex items-center space-x-2 w-32 lg:w-40 justify-end">
-                    <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-                    <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-                    <div className="hidden md:block w-16 lg:w-24 h-1 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    <div className="w-8 h-8 bg-white/10 rounded-full"></div>
+                    <div className="w-8 h-8 bg-white/10 rounded-full"></div>
+                    <div className="hidden md:block w-16 lg:w-24 h-1 bg-white/10 rounded"></div>
                 </div>
             </div>
         </div>
@@ -132,7 +132,7 @@ export function EmptySearchResults({ query, onClearSearch }) {
             </p>
             <button
                 onClick={onClearSearch}
-                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                className="px-4 py-2 bg-white/10 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
             >
                 Clear Search
             </button>

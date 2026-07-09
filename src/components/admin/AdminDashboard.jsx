@@ -5,7 +5,8 @@ import AdminOverview from './AdminOverview';
 import AdminUsersList from './AdminUsersList';
 import AdminAudioList from './AdminAudioList';
 import AdminModerationTab from './AdminModerationTab';
-import { LayoutDashboard, Users, Music, ShieldAlert } from 'lucide-react';
+import AdminApplicationsList from './AdminApplicationsList';
+import { LayoutDashboard, Users, Music, ShieldAlert, FileText } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -20,6 +21,7 @@ export default function AdminDashboard() {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { id: 'applications', label: 'Applications', icon: FileText },
     { id: 'moderation', label: 'Moderation', icon: ShieldAlert },
   ];
 
@@ -66,6 +68,7 @@ export default function AdminDashboard() {
         {/* Main Content Area */}
         <div className="flex-1 bg-gray-900/50 rounded-2xl border border-gray-800 backdrop-blur-xl p-6 min-h-[500px]">
           {activeTab === 'overview' && <AdminOverview />}
+          {activeTab === 'applications' && <AdminApplicationsList />}
           {activeTab === 'moderation' && <AdminModerationTab />}
           {activeTab === 'users' && <AdminUsersList />}
           {activeTab === 'audio' && <AdminAudioList />}

@@ -129,7 +129,7 @@ const CreatePlaylistModal = ({ isOpen, onClose, onCreatePlaylist }) => {
   )
 }
 
-export default function Sidebar({ isOpen, onClose }) {
+export default function ArtistSidebar({ isOpen, onClose }) {
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false)
   const [sidebarWidth, setSidebarWidth] = useState(320) // Default width
@@ -178,6 +178,7 @@ export default function Sidebar({ isOpen, onClose }) {
   }
 
   const libraryItems = [
+    { path: "/uploads", icon: Upload, label: "Your Uploads" },
     { path: "/favorites", icon: Heart, label: "Liked Songs" },
   ]
 
@@ -245,6 +246,39 @@ export default function Sidebar({ isOpen, onClose }) {
 
           {/* MOBILE: Library Items with better touch targets */}
           <div className="py-2">
+            {/* Primary Navigation */}
+            <div className="space-y-1 sm:space-y-2">
+              <Link
+                to="/"
+                onClick={() => { if (window.innerWidth < 1024) onClose() }}
+                className={`flex items-center space-x-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200 group ${
+                  location.pathname === "/"
+                    ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                }`}
+              >
+                <Library className={`w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-200 group-hover:scale-110 ${
+                  location.pathname === "/" ? "text-purple-600 dark:text-purple-400" : "text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300"
+                }`} />
+                <span className="font-semibold text-sm sm:text-base">Dashboard</span>
+              </Link>
+
+              {/* Added Browse Link to let artist browse standard music */}
+              <Link
+                to="/browse"
+                onClick={() => { if (window.innerWidth < 1024) onClose() }}
+                className={`flex items-center space-x-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200 group ${
+                  location.pathname === "/browse"
+                    ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                }`}
+              >
+                <ListMusic className={`w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-200 group-hover:scale-110 ${
+                  location.pathname === "/browse" ? "text-purple-600 dark:text-purple-400" : "text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300"
+                }`} />
+                <span className="font-semibold text-sm sm:text-base">Browse</span>
+              </Link>
+            </div>
             <nav className="space-y-1">
               {libraryItems.map((item) => (
                 <Link
@@ -304,7 +338,23 @@ export default function Sidebar({ isOpen, onClose }) {
             </nav>
           </div>
 
+          <hr className="border-gray-200/50 dark:border-gray-700/50 flex-shrink-0" />
 
+          {/* MOBILE: Upload Button with enhanced styling */}
+          <div className="my-4 sm:my-6 flex-shrink-0 relative">
+            {/* Wrapper for the Upload Button animation */}
+            <div className="uploadButton rounded-xl p-0.5">
+              <button
+                onClick={handleUploadClick}
+                className="w-full text-black dark:text-white bg-white dark:bg-gray-900 
+                font-medium py-3 px-4 sm:px-6 rounded-xl transition-all duration-200 transform
+                min-h-[48px] flex items-center justify-center space-x-3"
+              >
+                <Upload className="w-5 h-5" />
+                <span className="text-sm sm:text-base">Upload Song</span>
+              </button>
+            </div>
+          </div>
 
           {/* MOBILE: Bottom spacing for better UX */}
           <div className="pb-36 lg:pb-20 flex-shrink-0">
@@ -313,7 +363,8 @@ export default function Sidebar({ isOpen, onClose }) {
         </div>
       </div>
 
-
+      {/* Upload Modal */}
+      {showUploadModal && <UploadModal onClose={() => setShowUploadModal(false)} />}
 
       {/* Create Playlist Modal */}
       <CreatePlaylistModal

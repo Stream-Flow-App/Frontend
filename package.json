@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/plus-jakarta-sans": "^5.2.8",
+    "@fontsource/syne": "^5.2.7",
     "axios": "^1.11.0",
     "formik": "^2.4.6",
     "lucide-react": "^0.526.0",

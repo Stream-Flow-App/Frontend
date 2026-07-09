@@ -239,7 +239,7 @@ export default function AudioPlayer({ onToggleRightSidebar, isRightSidebarOpen }
 
     return (
       <>
-        <div className="bg-white/95 dark:bg-gray-800/95 border-t border-gray-200/50 dark:border-gray-700/50 px-2 py-2 sm:px-4 lg:px-6 backdrop-blur-lg shadow-2xl w-full">
+        <div className="glass-panel px-2 py-2 sm:px-4 lg:px-6 w-full rounded-2xl sm:rounded-3xl">
         <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
           
           {/* Song Info + Favorite */}

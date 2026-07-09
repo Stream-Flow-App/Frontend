@@ -4,6 +4,7 @@ import { MusicProvider } from "./context/MusicContext"
 import { ThemeProvider } from "./context/ThemeContext"
 import { AuthProvider } from "./context/AuthContext"
 import Layout from "./components/layout/Layout"
+import HomeRouter from "./components/home/HomeRouter"
 import HomePage from "./components/home/HomePage"
 import UploadsPage from "./components/uploads/UploadsPage"
 import FavoritesPage from "./components/favorites/FavoritesPage"
@@ -18,6 +19,8 @@ import MusicErrorBoundary from "./components/errorBoundary/MusicErrorBoundary"
 import ProtectedRoute from "./components/layout/ProtectedRoute"
 import AdminRoute from "./components/layout/AdminRoute"
 import AdminDashboard from "./components/admin/AdminDashboard"
+import LandingPage from "./components/home/LandingPage"
+import ArtistApplicationForm from "./components/home/ArtistApplicationForm"
 import "./index.css"
 
 const router = createBrowserRouter([
@@ -48,7 +51,31 @@ const router = createBrowserRouter([
         path: '', 
         element: (
           <MusicErrorBoundary fallbackMessage="There was an issue loading the home page">
+            <HomeRouter />
+          </MusicErrorBoundary>
+        ) 
+      },
+      { 
+        path: 'browse', 
+        element: (
+          <MusicErrorBoundary fallbackMessage="There was an issue loading the browse page">
             <HomePage />
+          </MusicErrorBoundary>
+        ) 
+      },
+      { 
+        path: 'about', 
+        element: (
+          <MusicErrorBoundary fallbackMessage="There was an issue loading the about page">
+            <LandingPage />
+          </MusicErrorBoundary>
+        ) 
+      },
+      { 
+        path: 'apply-artist', 
+        element: (
+          <MusicErrorBoundary fallbackMessage="There was an issue loading the application form">
+            <ArtistApplicationForm />
           </MusicErrorBoundary>
         ) 
       },

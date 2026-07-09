@@ -42,8 +42,8 @@ export default function RightSidebar({ isOpen, onClose }) {
       `}>
 
         <div className={`
-          w-full lg:w-80 h-full bg-white/98 lg:bg-white/95 dark:bg-gray-800/98 lg:dark:bg-gray-800/95 
-          backdrop-blur-lg lg:border-l border-gray-200/50 dark:border-gray-700/50 
+          w-full lg:w-80 h-full bg-gray-50 dark:bg-gray-900 
+          lg:border-l border-gray-200/50 dark:border-gray-700/50 
           shadow-2xl transition-all duration-300
           ${isOpen ? "translate-x-0 opacity-100" : "translate-x-full lg:translate-x-full opacity-0"}
         `}>

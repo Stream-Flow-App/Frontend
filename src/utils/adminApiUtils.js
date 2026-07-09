@@ -80,3 +80,24 @@ export const updateAudioStatus = async (id, status) => {
     throw error;
   }
 };
+
+export const fetchPendingAlbums = async () => {
+  try {
+    const response = await authApi.get('/api/admin/albums/pending');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching pending albums:', error);
+    throw error;
+  }
+};
+
+export const updateAlbumStatus = async (id, status) => {
+  try {
+    const action = status === 'approved' ? 'approve' : 'reject';
+    const response = await authApi.patch(`/api/admin/album/${id}/${action}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating album status (${status}):`, error);
+    throw error;
+  }
+};

@@ -77,7 +77,7 @@ export const getSongDisplayData = (song) => {
     const rawArtist = song.artist || song.singer || "Unknown Artist"
     const displayArtist = formatArtists(rawArtist)
     const displayCover = song.cover || song.coverImageUrl || "https://placehold.co/200x200/EFEFEF/AAAAAA?text=Song+Cover"
-    const displayDuration = song.duration || "0:00"
+    const displayDuration = typeof song.duration === 'number' ? formatTime(song.duration) : (song.duration || "0:00")
     const displayGenre = song.genre
 
     return {

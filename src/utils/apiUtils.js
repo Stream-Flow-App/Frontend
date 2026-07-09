@@ -87,12 +87,15 @@ export const transformApiSongs = (apiSongs) => {
 };
 
 /**
- * Convert milliseconds to MM:SS format
+ * Format duration correctly handling both seconds and milliseconds
  */
-export const formatDurationFromMs = (milliseconds) => {
-  if (!milliseconds || isNaN(milliseconds)) return "0:00";
+export const formatDurationFromMs = (timeValue) => {
+  if (!timeValue || isNaN(timeValue)) return "0:00";
   
-  const totalSeconds = Math.floor(milliseconds / 1000);
+  // If value is very large (e.g. > 10000), it's likely milliseconds. Otherwise, seconds.
+  const numericValue = typeof timeValue === 'number' ? timeValue : parseFloat(timeValue);
+  const totalSeconds = numericValue > 10000 ? Math.floor(numericValue / 1000) : Math.floor(numericValue);
+  
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   

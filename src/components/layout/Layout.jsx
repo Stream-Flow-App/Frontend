@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
 import { useMusic } from "../../context/MusicContext"
 import Sidebar from "../sidebars/Sidebar"
+import ArtistSidebar from "../sidebars/ArtistSidebar"
 import Navbar from "../navbar/Navbar"
 import RightSidebar from "../sidebars/RightSidebar"
 import AudioPlayer from '../audioPlayer/AudioPlayer'
@@ -51,7 +52,11 @@ export default function Layout() {
 
       <div className="flex flex-1 overflow-hidden">
         <MusicErrorBoundary fallbackMessage="There was an issue with the sidebar">
-          <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+          {user?.role === 'artist' ? (
+            <ArtistSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+          ) : (
+            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+          )}
         </MusicErrorBoundary>
         
         {/* Main content with padding bottom when audio player is visible */}
@@ -88,9 +93,9 @@ export default function Layout() {
         </div>
       </div>
       
-      {/* Fixed Audio Player - positioned absolutely to viewport bottom */}
+      {/* Fixed Audio Player - positioned to hover at viewport bottom */}
       {hasCurrentSong && (
-        <div className="fixed bottom-0 left-0 right-0 z-50">
+        <div className="fixed bottom-4 left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8 max-w-7xl mx-auto z-50 transition-all duration-300">
           <MusicErrorBoundary 
             fallbackMessage="There was an issue with the audio player"
             onReset={() => {

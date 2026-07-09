@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSongCard } from '../../hooks/useSongCard'
-import { formatArtists } from '../../utils/songDisplayUtils'
+import { formatArtists, formatTime } from '../../utils/songDisplayUtils'
 import SongCover from './SongCover'
 import SongInfo from './SongInfo'
 import SongMenu from './SongMenu'
@@ -82,15 +82,15 @@ export default function SongCard({
   const displayCover = rawCover
       ? rawCover.startsWith('/uploads/') ? `${API_BASE}${rawCover}` : rawCover
       : "https://placehold.co/200x200/EFEFEF/AAAAAA?text=Song+Cover"
-  const displayDuration = song.duration || "0:00"
+  const displayDuration = typeof song.duration === 'number' ? formatTime(song.duration) : (song.duration || "0:00")
   const displayGenre = song.genre
 
   return (
     <>
       <div
-        className={`bg-white/90 dark:bg-white/5 backdrop-blur-md rounded-xl p-3 sm:p-4 shadow-sm hover:shadow-xl transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] transform hover:scale-[1.03] hover:-translate-y-1 border border-gray-100/50 dark:border-white/10 group ${
+        className={`glass-panel rounded-3xl p-3 sm:p-4 song-card-hover group ${
           !isEditMode ? 'cursor-pointer' : ''
-        } ${isCurrentSong ? 'ring-2 ring-purple-500 ring-opacity-50' : ''}`}
+        } ${isCurrentSong ? 'ring-2 ring-aurora-violet ring-opacity-50' : ''}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleCardClick}

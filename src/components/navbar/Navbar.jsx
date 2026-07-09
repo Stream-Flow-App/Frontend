@@ -7,7 +7,7 @@ import { ToastContainer, useToast } from "../common/Toast"
 import { searchSongs } from "../../utils/apiUtils"
 import { useDebouncedCallback } from "../../hooks/useDebounce"
 import { PuffLoader } from 'react-spinners'
-import logoImage from "../../assets/logo.png"
+import logoImage from "../../assets/logo_transparent.png"
 import { Search, Home, Menu, Sun, Moon, User, Settings, LogOut, X, ShieldAlert, Play, Disc } from "lucide-react"
 import AuthenticationModals from "../authentication/AuthenticationModals"
 
