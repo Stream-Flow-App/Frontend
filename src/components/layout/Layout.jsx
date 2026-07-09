@@ -73,10 +73,10 @@ export default function Layout() {
         </MusicErrorBoundary>
         
         {/* Main content with padding bottom when audio player is visible */}
-        <main className={`flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 ${
+        <main className={`flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 flex flex-col ${
           hasCurrentSong ? 'pb-36 sm:pb-24 lg:pb-24' : ''
         }`}>
-          <div className="p-3 sm:p-4 lg:p-6">
+          <div className="p-3 sm:p-4 lg:p-6 flex-1">
             <MusicErrorBoundary 
               fallbackMessage="There was an issue loading this page"
               onReset={() => {}}
@@ -87,6 +87,22 @@ export default function Layout() {
               }} />
             </MusicErrorBoundary>
           </div>
+          
+          {/* Small Footer */}
+          <footer className="w-full py-4 px-6 text-center text-xs text-gray-500 dark:text-gray-500 mt-auto opacity-70">
+            <p>
+              &copy; {new Date().getFullYear()} StreamFlow. Built by{' '}
+              <a href="https://github.com/Zack-River" target="_blank" rel="noreferrer" className="text-purple-500 hover:text-purple-600 dark:hover:text-purple-400 font-medium transition-colors">
+                Zack River
+              </a>.
+            </p>
+            <p className="mt-1">
+              Ideas or bugs?{' '}
+              <a href="https://github.com/Zack-River" target="_blank" rel="noreferrer" className="hover:text-gray-700 dark:hover:text-gray-300 underline transition-colors">
+                Report them here
+              </a>.
+            </p>
+          </footer>
         </main> 
         
         {/* Right sidebar only shown on larger screens by default */}

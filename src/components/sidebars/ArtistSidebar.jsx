@@ -202,12 +202,12 @@ export default function ArtistSidebar({ isOpen, onClose }) {
   return (
     <>
       {/* MOBILE: Full-screen overlay */}
-      {isOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" onClick={onClose} />}
+      {isOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden" onClick={onClose} />}
 
       {/* MOBILE-FIRST: Reduced width and padding on mobile */}
       <div
         className={`
-          fixed lg:relative inset-y-0 left-0 z-50 
+          fixed lg:relative inset-y-0 left-0 z-[60] lg:z-0
           w-80 sm:w-72
           bg-gray-50 dark:bg-gray-900 
           border-r border-gray-200/50 dark:border-transparent

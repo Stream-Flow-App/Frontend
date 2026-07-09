@@ -196,7 +196,7 @@ const DeletePlaylistModal = ({ isOpen, onClose, playlist, onConfirmDelete }) => 
 }
 
 export default function PlaylistPage() {
-  const { state, deletePlaylist, updatePlaylist } = useMusic()
+  const { state, deletePlaylist, updatePlaylist, fetchPlaylists } = useMusic()
   const { user, isAuthenticated } = useAuth()
   const { playlistId } = useParams()
   const navigate = useNavigate()
@@ -269,7 +269,7 @@ export default function PlaylistPage() {
       await playlistUtils.clonePlaylist(playlistId);
       showToast('Playlist saved to your library', 'success');
       // Refresh user playlists in background
-      state.fetchPlaylists && state.fetchPlaylists();
+      fetchPlaylists && fetchPlaylists();
     } catch (e) {
       console.error(e);
       showToast('Failed to save playlist', 'error');

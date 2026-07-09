@@ -85,8 +85,8 @@ export default function AlbumPage() {
       });
       showToast('Album saved to your library', 'success');
       // Refresh user playlists
-      if (state.fetchPlaylists) {
-        state.fetchPlaylists();
+      if (fetchPlaylists) {
+        fetchPlaylists();
       }
     } catch (err) {
       console.error('Failed to save album:', err);
