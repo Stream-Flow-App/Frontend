@@ -1,4 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react"
+import { useDebounce } from "../../hooks/useDebounce"
+import { useDragScroll } from "../../hooks/useDragScroll"
 import { Link } from "react-router-dom"
 import { User } from "lucide-react"
 import { PuffLoader } from 'react-spinners'
@@ -19,7 +21,7 @@ import AuthenticationModals from "../authentication/AuthenticationModals.jsx"
 
 // Component for horizontal scrolling tabs (Categories & Genres)
 const ScrollableTabs = ({ items, selected, onSelect, labelMap = {} }) => {
-  const scrollRef = useRef(null)
+  const { ref: scrollRef } = useDragScroll()
   
   const scroll = (dir) => {
     if (scrollRef.current) {
@@ -31,10 +33,10 @@ const ScrollableTabs = ({ items, selected, onSelect, labelMap = {} }) => {
 
   return (
     <div className="relative group flex items-center mb-6 w-full">
-      <button onClick={() => scroll(-1)} className="absolute left-0 z-10 p-2 bg-gradient-to-r from-white dark:from-gray-900 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+      <button onClick={() => scroll(-1)} className="absolute left-0 z-10 p-2 bg-gradient-to-r from-white dark:from-gray-900 to-transparent opacity-0 group-hover:opacity-100 transition-opacity h-full">
         ◀
       </button>
-      <div ref={scrollRef} className="flex gap-2 overflow-x-auto scrollbar-hide px-6 scroll-smooth w-full">
+      <div ref={scrollRef} className="flex gap-2 overflow-x-auto scrollbar-hide px-6 scroll-smooth w-full cursor-grab active:cursor-grabbing">
         {items.map(item => (
           <button
             key={item}
@@ -49,7 +51,7 @@ const ScrollableTabs = ({ items, selected, onSelect, labelMap = {} }) => {
           </button>
         ))}
       </div>
-      <button onClick={() => scroll(1)} className="absolute right-0 z-10 p-2 bg-gradient-to-l from-white dark:from-gray-900 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+      <button onClick={() => scroll(1)} className="absolute right-0 z-10 p-2 bg-gradient-to-l from-white dark:from-gray-900 to-transparent opacity-0 group-hover:opacity-100 transition-opacity h-full">
         ▶
       </button>
     </div>
@@ -57,7 +59,7 @@ const ScrollableTabs = ({ items, selected, onSelect, labelMap = {} }) => {
 }
 
 const ImageCardsScroll = ({ items, selected, onSelect, type }) => {
-  const scrollRef = useRef(null)
+  const { ref: scrollRef } = useDragScroll()
   
   const scroll = (dir) => {
     if (scrollRef.current) {
@@ -75,7 +77,7 @@ const ImageCardsScroll = ({ items, selected, onSelect, type }) => {
       >
         <span className="text-gray-800 dark:text-gray-200">◀</span>
       </button>
-      <div ref={scrollRef} className="flex gap-4 overflow-x-auto scrollbar-hide px-2 py-2 scroll-smooth w-full">
+      <div ref={scrollRef} className="flex gap-4 overflow-x-auto scrollbar-hide px-2 py-2 scroll-smooth w-full cursor-grab active:cursor-grabbing">
         {items.map(item => {
           const isSelected = selected === item.name;
           const isCircle = type === 'artist';
@@ -123,6 +125,7 @@ export default function HomePage() {
   const [availableArtists, setAvailableArtists] = useState([{name: 'all', image: ''}])
   
   const [publicPlaylists, setPublicPlaylists] = useState([])
+  const { ref: playlistsScrollRef } = useDragScroll()
 
   // Authentication modal state
   const [showAuthModal, setShowAuthModal] = useState(false)
@@ -332,7 +335,7 @@ export default function HomePage() {
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 px-2 flex items-center justify-between">
                 <span>Featured Playlists</span>
               </h3>
-              <div className="flex gap-4 overflow-x-auto scrollbar-hide px-2 pb-4">
+              <div ref={playlistsScrollRef} className="flex gap-4 overflow-x-auto scrollbar-hide px-2 pb-4 cursor-grab active:cursor-grabbing">
                 {publicPlaylists.map(playlist => (
                   <div key={playlist._id} className="w-48 sm:w-56 flex-shrink-0">
                     <PlaylistCard playlist={playlist} />
