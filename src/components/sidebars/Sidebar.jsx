@@ -130,7 +130,6 @@ const CreatePlaylistModal = ({ isOpen, onClose, onCreatePlaylist }) => {
 }
 
 export default function Sidebar({ isOpen, onClose }) {
-  const [showUploadModal, setShowUploadModal] = useState(false)
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false)
   const [sidebarWidth, setSidebarWidth] = useState(320) // Default width
   const [isResizing, setIsResizing] = useState(false)
@@ -169,13 +168,6 @@ export default function Sidebar({ isOpen, onClose }) {
     }
   }, [resize, stopResizing])
 
-  const handleUploadClick = () => {
-    if (!isAuthenticated) {
-      window.dispatchEvent(new CustomEvent('auth:required'))
-      return
-    }
-    setShowUploadModal(true)
-  }
 
   const libraryItems = [
     { path: "/favorites", icon: Heart, label: "Liked Songs" },

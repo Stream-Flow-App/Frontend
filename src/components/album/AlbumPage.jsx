@@ -6,7 +6,6 @@ import SongCard from "../songCard/SongCard.jsx"
 import { fetchSongsWithRetry } from "../../utils/apiUtils"
 import { useAuth } from "../../context/AuthContext"
 import { useMusic } from "../../context/MusicContext"
-import { createPlaylist } from "../../utils/playlistUtils"
 import { useToast } from "../common/Toast"
 
 export default function AlbumPage() {
@@ -21,7 +20,7 @@ export default function AlbumPage() {
   const [isSaving, setIsSaving] = useState(false)
   
   const { isAuthenticated } = useAuth()
-  const { state } = useMusic()
+  const { createPlaylist, fetchPlaylists } = useMusic()
   const { showToast } = useToast()
 
   useEffect(() => {
