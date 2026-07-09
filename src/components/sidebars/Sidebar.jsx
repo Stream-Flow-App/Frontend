@@ -202,7 +202,7 @@ export default function Sidebar({ isOpen, onClose }) {
           w-80 sm:w-72
           bg-gray-50 dark:bg-gray-900 
           border-r border-gray-200/50 dark:border-transparent
-          transform ${isResizing ? '' : 'transition-all duration-200 ease-in-out'} shadow-2xl overflow-y-auto
+          transform ${isResizing ? '' : 'transition-all duration-200 ease-in-out'} shadow-2xl
           px-4 py-3 sm:px-6 sm:py-4
           ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
           [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:dark:bg-gray-600 [&::-webkit-scrollbar-thumb]:rounded-full
@@ -270,7 +270,7 @@ export default function Sidebar({ isOpen, onClose }) {
           </div>
 
           {/* MOBILE: Playlists section */}
-          <div className="py-2">
+          <div className="py-2 flex-1 flex flex-col min-h-0">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs sm:text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Playlists ({state.playlists?.length || 0})
@@ -285,7 +285,7 @@ export default function Sidebar({ isOpen, onClose }) {
               </button>
             </div>
 
-            <nav className="space-y-1">
+            <nav className="space-y-1 overflow-y-auto flex-1 pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:dark:bg-gray-600 [&::-webkit-scrollbar-thumb]:rounded-full">
               {state.playlists?.map((playlist) => (
                 <Link
                   key={playlist._id || playlist.id}
@@ -315,7 +315,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
 
           {/* Quick Links for Mobile */}
-          <div className="sm:hidden mt-auto pt-6 px-3 border-t border-gray-200 dark:border-gray-800">
+          <div className="sm:hidden mt-auto pt-4 pb-2 px-3 border-t border-gray-200 dark:border-gray-800 flex-shrink-0">
             <nav className="space-y-1">
               <Link
                 to="/about"
