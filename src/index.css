@@ -129,6 +129,39 @@
         background-attachment: fixed;
     }
 
+    /* ===== Disable text selection & image dragging across the whole app ===== */
+    *:not(input):not(textarea):not(select):not([contenteditable]) {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    /* Re-enable selection inside inputs and textareas */
+    input,
+    textarea,
+    select,
+    [contenteditable] {
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+    }
+
+    /* Disable dragging of images */
+    img {
+        -webkit-user-drag: none;
+        user-drag: none;
+        pointer-events: none;
+    }
+
+    /* Restore pointer events on clickable images (e.g. cover art, buttons with images) */
+    a img,
+    button img,
+    [role="button"] img {
+        pointer-events: auto;
+    }
+
     h1, h2, h3, h4, h5, h6 {
         font-family: "Syne", sans-serif;
         font-weight: 700;
