@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useAuth } from "../../context/AuthContext"
 import { Play, Music, Users } from "lucide-react"
-import { fetchSongsWithRetry } from "../../utils/apiUtils.js"
+import { fetchMyUploads } from "../../utils/apiUtils.js"
 import SongCard from "../songCard/SongCard.jsx"
 import SongCardSkeleton from "../common/SongCardSkeleton.jsx"
 import { ToastContainer } from "../common/Toast"
@@ -18,12 +18,8 @@ export default function ArtistHomePage() {
     try {
       setLoading(true)
       setError(null)
-      // Fetch only songs uploaded by this artist
-      const results = await fetchSongsWithRetry(3, 1000, { 
-        page: 1, 
-        limit: 50, 
-        artist: user.username 
-      })
+      // Fetch all songs uploaded by this artist (pending, approved, rejected)
+      const results = await fetchMyUploads()
       setSongs(results.songs || [])
     } catch (err) {
       console.error(err)

@@ -1,6 +1,7 @@
 
 // utils/apiUtils.js
 import axios from 'axios'
+import { authApi } from './authUtils'
 
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
@@ -169,6 +170,25 @@ export const fetchSongsWithRetry = async (maxRetries = 3, delay = 1000, params =
       // Wait before retrying
       await new Promise(resolve => setTimeout(resolve, delay * attempt))
     }
+  }
+}
+
+/**
+ * Fetch artist's own uploaded songs
+ */
+export const fetchMyUploads = async () => {
+  try {
+    const response = await authApi.get('/audios/mine')
+    const songsData = response.data?.audios || []
+    
+    const transformedSongs = transformApiSongs(songsData)
+    return {
+      songs: transformedSongs,
+      totalCount: response.data?.count || transformedSongs.length
+    }
+  } catch (error) {
+    console.error('Error fetching my uploads:', error)
+    throw error
   }
 }
 
