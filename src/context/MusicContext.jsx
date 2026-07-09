@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useState, useCallback } from 'react'
 import * as playlistUtils from '../utils/playlistUtils'
+import { fetchFavoritesAPI, toggleFavoriteAPI } from '../utils/apiUtils'
 
 // Action Types - Centralized for better maintenance
 // eslint-disable-next-line react-refresh/only-export-components
@@ -911,6 +912,53 @@ export function MusicProvider({ children }) {
     }
   }, [])
   
+  const fetchFavorites = useCallback(async () => {
+    try {
+      const response = await fetchFavoritesAPI()
+      if (response.success) {
+        dispatch(createMusicAction(MUSIC_ACTIONS.SET_FAVORITES, response.favorites))
+      }
+      return response
+    } catch (error) {
+      console.error('Error fetching favorites:', error)
+      throw error
+    }
+  }, [])
+
+  const handleToggleFavorite = useCallback(async (song) => {
+    if (!song) return
+    const songId = song.id || song._id
+    
+    // Optimistic update locally
+    const isCurrentlyFavorite = state.favorites.some(fav => (fav.id || fav._id) === songId)
+    if (isCurrentlyFavorite) {
+      dispatch(createMusicAction(MUSIC_ACTIONS.REMOVE_FROM_FAVORITES, songId))
+    } else {
+      dispatch(createMusicAction(MUSIC_ACTIONS.ADD_TO_FAVORITES, song))
+    }
+    
+    // Sync with API
+    try {
+      const response = await toggleFavoriteAPI(songId)
+      if (!response.success) {
+        // Revert on failure
+        if (isCurrentlyFavorite) {
+          dispatch(createMusicAction(MUSIC_ACTIONS.ADD_TO_FAVORITES, song))
+        } else {
+          dispatch(createMusicAction(MUSIC_ACTIONS.REMOVE_FROM_FAVORITES, songId))
+        }
+      }
+    } catch (error) {
+      console.error('Failed to sync favorite with server', error)
+      // Revert on failure
+      if (isCurrentlyFavorite) {
+        dispatch(createMusicAction(MUSIC_ACTIONS.ADD_TO_FAVORITES, song))
+      } else {
+        dispatch(createMusicAction(MUSIC_ACTIONS.REMOVE_FROM_FAVORITES, songId))
+      }
+    }
+  }, [state.favorites])
+  
   const openPlaylistModal = useCallback((song) => {
     dispatch(createMusicAction(MUSIC_ACTIONS.OPEN_PLAYLIST_MODAL, song))
   }, [])
@@ -959,12 +1007,14 @@ export function MusicProvider({ children }) {
     deletePlaylist,
     updatePlaylist,
     addSongToPlaylist,
-    removeSongFromPlaylist,
+    // Playlist and favorites API actions
     fetchPlaylists,
+    fetchFavorites,
+    handleToggleFavorite,
+    
+    // UI Modals
     openPlaylistModal,
     closePlaylistModal,
-
-    // Error handling
     clearError,
 
     // Action creators for external use

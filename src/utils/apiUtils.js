@@ -426,3 +426,35 @@ export const fetchMyAudiosAPI = async () => {
     throw error;
   }
 };
+
+/**
+ * Favorites API
+ */
+export const fetchFavoritesAPI = async () => {
+  try {
+    const response = await api.get('/api/users/favorites', { withCredentials: true });
+    return {
+      success: true,
+      favorites: Array.isArray(response.data.favorites)
+        ? response.data.favorites.map(transformApiSong)
+        : []
+    };
+  } catch (error) {
+    console.error('Error fetching favorites:', error);
+    return { success: false, message: 'Failed to load favorites', favorites: [] };
+  }
+};
+
+export const toggleFavoriteAPI = async (songId) => {
+  try {
+    const response = await api.post(`/api/users/favorites/${songId}`, {}, { withCredentials: true });
+    return {
+      success: true,
+      isFavorite: response.data.isFavorite,
+      message: response.data.message
+    };
+  } catch (error) {
+    console.error('Error toggling favorite:', error);
+    return { success: false, message: 'Failed to toggle favorite' };
+  }
+};

@@ -13,7 +13,7 @@ import PlaylistSelectionModal from '../modals/PlaylistSelectionModal'
 
 export default function Layout() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth()
-  const { state, dispatch } = useMusic()
+  const { state, dispatch, fetchPlaylists, fetchFavorites } = useMusic()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false)
 
@@ -29,6 +29,19 @@ export default function Layout() {
       dispatch({ type: 'SET_PLAYING', payload: false })
     }
   }, [user, state.currentSong, dispatch])
+
+  // Fetch initial user data (Playlists and Favorites)
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (state.playlists.length === 0) {
+        fetchPlaylists?.();
+      }
+      if (state.favorites.length === 0) {
+        fetchFavorites?.();
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated])
 
   const toggleRightSidebar = () => {
     setIsRightSidebarOpen(!isRightSidebarOpen)

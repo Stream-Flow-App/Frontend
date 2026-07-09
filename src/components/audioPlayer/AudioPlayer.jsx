@@ -10,7 +10,7 @@ import VolumeControl from './VolumeControl'
 import RightSidebarToggle from './RightSidebarToggle'
 
 export default function AudioPlayer({ onToggleRightSidebar, isRightSidebarOpen }) {
-  const { state, dispatch, playNext, playPrevious, toggleShuffle, toggleRepeat, hasNext, hasPrevious } = useMusic()
+  const { state, dispatch, playNext, playPrevious, toggleShuffle, toggleRepeat, hasNext, hasPrevious, handleToggleFavorite } = useMusic()
   const { currentSong, isPlaying, volume, currentTime, duration, isShuffled, repeatMode, isSkipping } = state
 
   const audioPlayerRef = React.useRef(null)
@@ -135,18 +135,8 @@ export default function AudioPlayer({ onToggleRightSidebar, isRightSidebarOpen }
   // Favorite handler
   const handleFavorite = useCallback(() => {
     if (!currentSong) return
-    
-    const currentSongId = currentSong.id || currentSong._id
-    const isFavorite = state.favorites.some(fav => (fav.id || fav._id) === currentSongId)
-    
-    if (isFavorite) {
-      dispatch({ type: 'REMOVE_FROM_FAVORITES', payload: currentSongId })
-      console.log('💔 Removed from favorites:', currentSong.title)
-    } else {
-      dispatch({ type: 'ADD_TO_FAVORITES', payload: currentSong })
-      console.log('❤️ Added to favorites:', currentSong.title)
-    }
-  }, [currentSong, state.favorites, dispatch])
+    handleToggleFavorite(currentSong)
+  }, [currentSong, handleToggleFavorite])
 
   // Volume handlers
   const handleMute = useCallback(() => {

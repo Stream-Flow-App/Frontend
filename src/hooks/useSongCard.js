@@ -7,7 +7,7 @@ import { MUSIC_ACTIONS, createMusicAction } from '../context/MusicContext'
 import { deleteAudioAPI } from '../utils/apiUtils'
 
 export const useSongCard = (song, onAuthRequired, playlist = []) => {
-  const { state, dispatch, openPlaylistModal } = useMusic()
+  const { state, dispatch, openPlaylistModal, handleToggleFavorite } = useMusic()
   const { isAuthenticated } = useAuth()
   const { guardPlayAction, guardFavoriteAction, createGuardedAction } = useAuthGuard(isAuthenticated, onAuthRequired)
 
@@ -95,15 +95,14 @@ export const useSongCard = (song, onAuthRequired, playlist = []) => {
     }
   }, [isCurrentSong, isPlaying, playlist, normalizedSong, state.isShuffled, state.queue.length, dispatch, song.title])
 
-  const toggleFavoriteCore = useCallback(() => {
+  const toggleFavoriteCore = useCallback(async () => {
     if (isFavorite) {
-      dispatch(createMusicAction(MUSIC_ACTIONS.REMOVE_FROM_FAVORITES, songId))
       showSuccessToast(`Removed "${song.title}" from favorites`)
     } else {
-      dispatch(createMusicAction(MUSIC_ACTIONS.ADD_TO_FAVORITES, normalizedSong))
       showSuccessToast(`Added "${song.title}" to favorites`)
     }
-  }, [isFavorite, songId, song.title, normalizedSong, dispatch])
+    await handleToggleFavorite(normalizedSong)
+  }, [isFavorite, song.title, normalizedSong, handleToggleFavorite])
 
   // Guarded actions - FIXED: Ensure proper error handling
   const guardedPlaySong = guardPlayAction ? guardPlayAction(playSongCore, {
