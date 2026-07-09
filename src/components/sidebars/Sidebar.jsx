@@ -314,10 +314,11 @@ export default function Sidebar({ isOpen, onClose }) {
 
 
 
-          {/* Quick Links for Mobile */}
-          <div className="sm:hidden mt-auto pt-4 pb-2 px-3 border-t border-gray-200 dark:border-gray-800 flex-shrink-0">
+          {/* Quick Links */}
+          <div className="mt-auto pt-4 pb-2 px-3 border-t border-gray-200 dark:border-gray-800 flex-shrink-0">
             <nav className="space-y-1">
-              <Link
+              {!isAuthenticated && (
+                <Link
                 to="/about"
                 onClick={handleMobileClose}
                 className={`flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${isActive('/about')
@@ -328,6 +329,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 <Info className="w-5 h-5" />
                 <span className="font-medium text-sm">About Us</span>
               </Link>
+              )}
               <Link
                 to="/privacy"
                 onClick={handleMobileClose}

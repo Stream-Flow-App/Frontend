@@ -432,37 +432,7 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
                 >
                   <Search className="w-5 h-5" />
                 </button>
-
-                <Link
-                  to="/about"
-                  className={`hidden sm:block p-2 rounded-xl transition-colors ${isAbout
-                    ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
-                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
-                    }`}
-                >
-                  <Info className="w-5 h-5" />
-                </Link>
-                <Link
-                  to="/privacy"
-                  className={`hidden sm:block p-2 rounded-xl transition-colors ${isPrivacy
-                    ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
-                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
-                    }`}
-                >
-                  <Shield className="w-5 h-5" />
-                </Link>
-
-                <Link
-                  to="/support"
-                  className={`hidden sm:block p-2 rounded-xl transition-colors ${isSupport
-                    ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
-                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
-                    }`}
-                >
-                  <HelpCircle className="w-5 h-5" />
-                </Link>
               </div>
-
               {/* Center: Logo + App Name */}
               <Link to="/" className="flex items-center space-x-2 absolute left-1/2 transform -translate-x-1/2">
                 <span className="font-bold text-lg sm:text-xl bg-gradient-to-bl from-purple-600 via-purple-500 to-blue-600 bg-clip-text text-transparent">
@@ -608,16 +578,6 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
                   <Home className="w-5 h-5" />
                 </Link>
 
-                <Link
-                  to="/about"
-                  title="About StreamFlow"
-                  className={`p-3 rounded-xl transition-all duration-300 transform hover:scale-110 ${isAbout
-                    ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
-                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
-                    }`}
-                >
-                  <Info className="w-5 h-5" />
-                </Link>
 
                 <div className="relative flex-1 max-w-lg">
                   {/* Search Icon with loading state */}
@@ -664,28 +624,6 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
                     />
                   </div>
                 </div>
-
-                <Link
-                  to="/privacy"
-                  title="Privacy Policy"
-                  className={`p-3 rounded-xl transition-all duration-300 transform hover:scale-110 ${isPrivacy
-                    ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
-                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
-                    }`}
-                >
-                  <Shield className="w-5 h-5" />
-                </Link>
-
-                <Link
-                  to="/support"
-                  title="Support"
-                  className={`p-3 rounded-xl transition-all duration-300 transform hover:scale-110 ${isSupport
-                    ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
-                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
-                    }`}
-                >
-                  <HelpCircle className="w-5 h-5" />
-                </Link>
               </div>
 
               {/* Right side: Theme + Auth */}
