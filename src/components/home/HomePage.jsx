@@ -6,10 +6,8 @@ import SongCard from "../songCard/SongCard.jsx"
 import PlaylistCard from "../playlist/PlaylistCard.jsx"
 import SongCardSkeleton from "../common/SongCardSkeleton.jsx"
 import { ToastContainer, useToast } from "../common/Toast"
-import { useDebounce } from "../../hooks/useDebounce"
-
 import {
-  searchSongs as searchApiSongs,
+  fetchSongsWithRetry,
   getUniqueGenres,
   getUniqueArtists,
   fetchPublicPlaylistsAPI
@@ -266,7 +264,7 @@ export default function HomePage() {
   }
 
   // Error state
-  if (error && songs.length === 0 && !externalSearchQuery) {
+  if (error && songs.length === 0) {
     return (
       <>
         <div className="space-y-4 sm:space-y-6 md:space-y-8">
