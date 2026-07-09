@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchAdminAudios, deleteAdminAudio } from '../../utils/adminApiUtils';
-import { Trash2, AlertTriangle, PlayCircle } from 'lucide-react';
+import { Trash2, AlertTriangle, PlayCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PuffLoader } from 'react-spinners';
 import { useToast } from '../common/Toast';
 import { useMusic } from '../../context/MusicContext';
@@ -9,6 +9,8 @@ export default function AdminAudioList() {
   const [audios, setAudios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingAudio, setDeletingAudio] = useState(null);
+  const [page, setPage] = useState(1);
+  const limit = 10;
   const { playSong } = useMusic();
   const { showErrorToast, showSuccessToast } = useToast();
 
@@ -53,7 +55,7 @@ export default function AdminAudioList() {
   return (
     <div className="animate-fade-in space-y-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-white">Manage Audio Tracks</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Manage Audio Tracks</h2>
         <span className="bg-purple-600/20 text-purple-400 px-3 py-1 rounded-full text-sm font-medium border border-purple-500/20">
           {audios.length} Tracks Total
         </span>
@@ -71,7 +73,7 @@ export default function AdminAudioList() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-            {audios.map((audio) => (
+            {audios.slice((page - 1) * limit, page * limit).map((audio) => (
               <tr key={audio._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors group">
                 <td className="px-6 py-4 flex items-center space-x-3">
                   <div className="relative w-10 h-10 rounded-md overflow-hidden bg-gray-800 border border-gray-700">
@@ -129,6 +131,30 @@ export default function AdminAudioList() {
           </tbody>
         </table>
       </div>
+
+      {Math.ceil(audios.length / limit) > 1 && (
+        <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mt-4">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            Showing Page {page} of {Math.ceil(audios.length / limit)}
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              disabled={page === 1}
+              className="p-2 rounded-lg bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button
+              onClick={() => setPage((prev) => Math.min(prev + 1, Math.ceil(audios.length / limit)))}
+              disabled={page === Math.ceil(audios.length / limit)}
+              className="p-2 rounded-lg bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {deletingAudio && (

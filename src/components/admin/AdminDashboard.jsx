@@ -68,7 +68,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 bg-gray-900/50 rounded-2xl border border-gray-800 backdrop-blur-xl p-6 min-h-[500px]">
+        <div className="flex-1 bg-gray-50/50 dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-800 backdrop-blur-xl p-6 min-h-[500px]">
           {activeTab === 'overview' && <AdminOverview />}
           {activeTab === 'applications' && <AdminApplicationsList />}
           {activeTab === 'moderation' && <AdminModerationTab />}
