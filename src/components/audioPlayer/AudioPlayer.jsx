@@ -12,7 +12,7 @@ import RightSidebarToggle from './RightSidebarToggle'
 
 export default function AudioPlayer({ onToggleRightSidebar, isRightSidebarOpen }) {
   const { state, dispatch, playNext, playPrevious, toggleShuffle, toggleRepeat, hasNext, hasPrevious, handleToggleFavorite } = useMusic()
-  const { currentSong, isPlaying, volume, currentTime, duration, isShuffled, repeatMode, isSkipping } = state
+  const { currentSong, isPlaying, volume, currentTime, duration, isShuffled, repeatMode, isSkipping, queue } = state
 
   const audioPlayerRef = React.useRef(null)
   const countedSongIdRef = useRef(null)
@@ -195,16 +195,19 @@ export default function AudioPlayer({ onToggleRightSidebar, isRightSidebarOpen }
   // Sync playback state to backend
   const currentSongRef = React.useRef(currentSong)
   const currentTimeRef = React.useRef(currentTime)
+  const queueRef = React.useRef(queue || [])
 
   React.useEffect(() => {
     currentSongRef.current = currentSong
     currentTimeRef.current = currentTime
-  }, [currentSong, currentTime])
+    queueRef.current = queue || []
+  }, [currentSong, currentTime, queue])
 
   const doSync = React.useCallback(() => {
     if (currentSongRef.current) {
       const songId = currentSongRef.current.id || currentSongRef.current._id
-      syncPlaybackState(songId, currentTimeRef.current)
+      const queueIds = queueRef.current.map(s => s.id || s._id).filter(Boolean)
+      syncPlaybackState(songId, currentTimeRef.current, queueIds)
     }
   }, [])
 

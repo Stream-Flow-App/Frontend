@@ -512,7 +512,7 @@ export const updateProfile = async (profileData, profileImg = null) => {
 /**
  * Sync playback state to backend
  */
-export const syncPlaybackState = async (songId, currentTime) => {
+export const syncPlaybackState = async (songId, currentTime, queue = []) => {
   try {
     // Use native fetch with keepalive: true to ensure the request
     // fires even if the browser tab is being closed
@@ -524,7 +524,7 @@ export const syncPlaybackState = async (songId, currentTime) => {
       // Since it's a cross-origin request sometimes, ensure credentials are sent
       credentials: "include",
       keepalive: true,
-      body: JSON.stringify({ songId, currentTime }),
+      body: JSON.stringify({ songId, currentTime, queue }),
     });
 
     const data = await response.json();

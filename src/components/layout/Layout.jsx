@@ -29,6 +29,11 @@ export default function Layout() {
       dispatch({ type: 'SET_CURRENT_SONG', payload: transformedSong })
       dispatch({ type: 'SET_TIME', payload: user.lastPlayback.currentTime || 0 })
       dispatch({ type: 'SET_PLAYING', payload: false })
+      
+      if (user.lastPlayback.queue && Array.isArray(user.lastPlayback.queue)) {
+        const transformedQueue = user.lastPlayback.queue.map(song => transformApiSong(song)).filter(Boolean)
+        dispatch({ type: 'SET_QUEUE', payload: transformedQueue })
+      }
     }
   }, [user, state.currentSong, dispatch])
 
