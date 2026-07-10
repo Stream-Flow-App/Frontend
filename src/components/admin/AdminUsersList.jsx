@@ -45,7 +45,8 @@ export default function AdminUsersList() {
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [search, page, activeTab, loadUsers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, page, activeTab]);
 
   // handleBan, handleRoleChange remain unchanged...
   const handleBan = async () => {
