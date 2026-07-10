@@ -99,7 +99,7 @@ export default function SupportPage() {
         </div>
 
         {/* Contact Info Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 flex items-center space-x-4">
             <div className="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-lg text-purple-600 dark:text-purple-400 flex-shrink-0">
               <Mail className="w-6 h-6" />
@@ -109,22 +109,54 @@ export default function SupportPage() {
               <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">zackriver.dev@gmail.com</p>
             </div>
           </div>
-          <a href="https://www.linkedin.com/in/labdallah-wageehl/" target="_blank" rel="noreferrer" className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 flex items-center space-x-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-            <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-lg text-blue-600 dark:text-blue-400 flex-shrink-0">
-              <Linkedin className="w-6 h-6" />
+          
+          <a href="https://github.com/Stream-Flow-App" target="_blank" rel="noreferrer" className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 flex items-center space-x-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+            <div className="bg-gray-100 dark:bg-gray-900 p-3 rounded-lg text-gray-800 dark:text-gray-200 flex-shrink-0">
+              <Github className="w-6 h-6" />
             </div>
             <div className="min-w-0">
-              <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">LinkedIn</h4>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">Connect</p>
+              <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">StreamFlow</h4>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">Org GitHub</p>
             </div>
           </a>
+
           <a href="https://github.com/Zack-River" target="_blank" rel="noreferrer" className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 flex items-center space-x-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
             <div className="bg-gray-100 dark:bg-gray-900 p-3 rounded-lg text-gray-800 dark:text-gray-200 flex-shrink-0">
               <Github className="w-6 h-6" />
             </div>
             <div className="min-w-0">
-              <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">GitHub</h4>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">Zack-River</p>
+              <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Zack River</h4>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">GitHub</p>
+            </div>
+          </a>
+
+          <a href="https://www.linkedin.com/in/labdallah-wageehl/" target="_blank" rel="noreferrer" className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 flex items-center space-x-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+            <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-lg text-blue-600 dark:text-blue-400 flex-shrink-0">
+              <Linkedin className="w-6 h-6" />
+            </div>
+            <div className="min-w-0">
+              <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Abdallah Wageeh</h4>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">LinkedIn</p>
+            </div>
+          </a>
+
+          <a href="https://www.linkedin.com/in/ziadseleem" target="_blank" rel="noreferrer" className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 flex items-center space-x-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+            <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-lg text-blue-600 dark:text-blue-400 flex-shrink-0">
+              <Linkedin className="w-6 h-6" />
+            </div>
+            <div className="min-w-0">
+              <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Ziad Seleem</h4>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">LinkedIn</p>
+            </div>
+          </a>
+
+          <a href="https://github.com/ziad328" target="_blank" rel="noreferrer" className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 flex items-center space-x-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+            <div className="bg-gray-100 dark:bg-gray-900 p-3 rounded-lg text-gray-800 dark:text-gray-200 flex-shrink-0">
+              <Github className="w-6 h-6" />
+            </div>
+            <div className="min-w-0">
+              <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Ziad Seleem</h4>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">GitHub</p>
             </div>
           </a>
         </div>
