@@ -73,6 +73,21 @@ export default function SongCard({
     }
   }
 
+  const handleDeleteClick = (e) => {
+    e.stopPropagation()
+    setShowDeleteConfirm(true)
+  }
+
+  const handleMenuOptionIntercept = (option, e) => {
+    if (option === 'edit') {
+      e.stopPropagation()
+      setShowMenu(false)
+      if (onEditClick) onEditClick(song)
+    } else {
+      handleMenuOption(option, e)
+    }
+  }
+
   // Display properties
   const displayTitle = song.title || "Unknown Title"
   const rawArtist = song.artist || song.singer || "Unknown Artist"
@@ -110,6 +125,7 @@ export default function SongCard({
           isAuthenticated={isAuthenticated}
           isFavorite={isFavorite}
           onEditClick={handleEditClick}
+          onDeleteClick={handleDeleteClick}
           onPlayPause={handlePlayPause}
           onFavorite={handleFavorite}
         />
@@ -125,7 +141,7 @@ export default function SongCard({
           showMenu={showMenu}
           menuRef={menuRef}
           onMenuToggle={handleMenuToggle}
-          onMenuOption={handleMenuOption}
+          onMenuOption={handleMenuOptionIntercept}
           onAuthRequired={onAuthRequired}
           isInQueue={isInQueue}
           isUploaded={isUploaded}

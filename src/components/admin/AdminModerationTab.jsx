@@ -96,6 +96,18 @@ export default function AdminModerationTab() {
   const currentItems = view === 'audio' ? pendingAudios : pendingAlbums;
   const isAudioView = view === 'audio';
 
+  const getCoverImageUrl = (url) => {
+    if (!url || url === 'No Cover') return '/assets/images/default-cover.jpg';
+    if (url.startsWith('http')) return url;
+    let path = url;
+    if (path.includes('uploads/')) {
+      path = '/uploads/' + path.split('uploads/')[1];
+    } else if (!path.startsWith('/')) {
+      path = '/' + path;
+    }
+    return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${path}`;
+  };
+
   return (
     <div className="animate-fade-in space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -129,13 +141,10 @@ export default function AdminModerationTab() {
       ) : (
         <div className="grid gap-4">
           {currentItems.map((item) => (
-            <div key={item._id} className="bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4 flex-1 min-w-0">
+            <div key={item._id} className="bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4 w-full sm:w-auto flex-1 min-w-0">
                 <img
-                  src={isAudioView
-                    ? (item.coverImageUrl ? (item.coverImageUrl.startsWith('/uploads/') ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${item.coverImageUrl}` : item.coverImageUrl) : '/assets/images/default-cover.jpg')
-                    : (item.cover ? (item.cover.startsWith('/uploads/') ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${item.cover}` : item.cover) : '/assets/images/default-cover.jpg')
-                  }
+                  src={getCoverImageUrl(isAudioView ? item.coverImageUrl : item.cover)}
                   alt={item.title || item.name}
                   className="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
                 />
@@ -161,7 +170,7 @@ export default function AdminModerationTab() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full sm:w-auto flex-shrink-0 mt-2 sm:mt-0">
                 {isAudioView ? (
                   <>
                     <button

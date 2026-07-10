@@ -62,7 +62,7 @@ export default function AdminAudioList() {
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 shadow-sm dark:shadow-none">
-        <table className="w-full text-left text-sm text-gray-700 dark:text-gray-300">
+        <table className="w-full text-left text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
           <thead className="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 font-medium">
             <tr>
               <th className="px-6 py-4">Title</th>

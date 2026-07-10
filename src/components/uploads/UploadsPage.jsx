@@ -99,10 +99,10 @@ export default function UploadsPage() {
               <button
                 onClick={() => setIsEditMode(true)}
                 className="btn-ghost flex items-center space-x-2 px-3 sm:px-4 py-2 cursor-pointer rounded-lg sm:rounded-xl hover:text-purple-600 dark:hover:text-purple-400 text-sm"
-                disabled={songs.length === 0}
+                disabled={activeTab === "songs" ? songs.length === 0 : albums.length === 0}
               >
                 <Edit2 className="w-4 h-4" />
-                <span>Edit Songs</span>
+                <span>Edit {activeTab === "songs" ? "Songs" : "Albums"}</span>
               </button>
             )}
           </div>
@@ -114,7 +114,7 @@ export default function UploadsPage() {
             <div className="flex items-start space-x-3">
               <Edit2 className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
               <p className="text-purple-800 dark:text-purple-300 font-medium text-sm sm:text-base leading-relaxed">
-                Edit mode enabled. Tap on songs and click the edit button to modify their details.
+                Edit mode enabled. Tap on {activeTab === "songs" ? "songs" : "albums"} and click the edit or delete button to modify them.
               </p>
             </div>
           </div>
@@ -167,7 +167,20 @@ export default function UploadsPage() {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
               {albums.map(album => (
-                <PlaylistCard key={album._id} playlist={album} showStatus={true} isAlbum={true} />
+                <PlaylistCard 
+                  key={album._id} 
+                  playlist={album} 
+                  showStatus={true} 
+                  isAlbum={true} 
+                  isEditMode={isEditMode}
+                  onEditClick={() => {
+                    // Navigate to album page or open edit modal
+                    window.location.href = `/album/${album._id || album.id}?edit=true`
+                  }}
+                  onDeleteClick={() => {
+                    // Handled inside PlaylistCard with ConfirmModal
+                  }}
+                />
               ))}
             </div>
           )

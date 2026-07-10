@@ -11,7 +11,7 @@ export default function PrivacyPolicyPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 mb-4">
             <Shield className="w-8 h-8" />
           </div>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
             Privacy & Policy
           </h1>
           <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
@@ -20,11 +20,11 @@ export default function PrivacyPolicyPage() {
         </div>
 
         {/* Content */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 sm:p-12 space-y-8">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 sm:p-12 space-y-8">
           
           <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
-              <FileText className="w-6 h-6 mr-3 text-purple-500" />
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+              <FileText className="w-5 h-5 sm:w-6 sm:h-6 mr-3 text-purple-500 flex-shrink-0" />
               Information We Collect
             </h2>
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
@@ -33,8 +33,8 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
-              <Lock className="w-6 h-6 mr-3 text-purple-500" />
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+              <Lock className="w-5 h-5 sm:w-6 sm:h-6 mr-3 text-purple-500 flex-shrink-0" />
               How We Use Your Data
             </h2>
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
@@ -57,7 +57,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Data Security</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Data Security</h2>
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
               We implement a variety of security measures to maintain the safety of your personal information. Your data is contained behind secured networks and is only accessible by a limited number of persons who have special access rights to such systems.
             </p>

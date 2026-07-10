@@ -84,6 +84,10 @@ export const updateAudioStatus = async (id, status) => {
 export const fetchPendingAlbums = async () => {
   try {
     const response = await authApi.get('/api/admin/albums/pending');
+    if (response.data.albums) {
+      const { transformAlbum } = await import('./albumUtils');
+      response.data.albums = response.data.albums.map(transformAlbum);
+    }
     return response.data;
   } catch (error) {
     console.error('Error fetching pending albums:', error);

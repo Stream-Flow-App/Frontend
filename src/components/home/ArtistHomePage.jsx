@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react"
 import { useAuth } from "../../context/AuthContext"
-import { Play, Music, Users } from "lucide-react"
+import { Play, Music, Disc, Clock } from "lucide-react"
 import { fetchMyUploads } from "../../utils/apiUtils.js"
+import { fetchUserAlbums } from "../../utils/albumUtils.js"
 import SongCard from "../songCard/SongCard.jsx"
 import SongCardSkeleton from "../common/SongCardSkeleton.jsx"
 import { ToastContainer } from "../common/Toast"
@@ -9,6 +10,7 @@ import { ToastContainer } from "../common/Toast"
 export default function ArtistHomePage() {
   const { user } = useAuth()
   const [songs, setSongs] = useState([])
+  const [albums, setAlbums] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -16,8 +18,12 @@ export default function ArtistHomePage() {
     try {
       setLoading(true)
       setError(null)
-      const results = await fetchMyUploads()
+      const [results, albumResults] = await Promise.all([
+        fetchMyUploads(),
+        fetchUserAlbums().catch(() => ({ albums: [] }))
+      ])
       setSongs(results.songs || [])
+      setAlbums(albumResults.albums || [])
     } catch (err) {
       console.error(err)
       setError('Failed to load your uploads')
@@ -32,9 +38,19 @@ export default function ArtistHomePage() {
 
   // Calculate real stats based on fetched songs
   const approvedSongs = songs.filter(s => s.status === 'approved')
+  const topSongs = [...approvedSongs].sort((a, b) => (b.plays || 0) - (a.plays || 0)).slice(0, 5)
   const totalUploads = songs.length
   const totalPlays = songs.reduce((sum, song) => sum + (song.plays || 0), 0)
-  const placeholderFollowers = Math.floor(totalPlays * 0.12)
+  const totalListenSeconds = songs.reduce((sum, song) => sum + (song.totalListenSeconds || 0), 0)
+
+  const formatListenTime = (seconds) => {
+    if (seconds < 60) return `${Math.floor(seconds)}s`
+    const mins = Math.floor(seconds / 60)
+    if (mins < 60) return `${mins}m`
+    const hrs = Math.floor(mins / 60)
+    const remainingMins = mins % 60
+    return `${hrs}h ${remainingMins}m`
+  }
 
   return (
     <div className="space-y-6 md:space-y-8 animate-fade-in">
@@ -52,7 +68,7 @@ export default function ArtistHomePage() {
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-gray-500 dark:text-gray-400 font-medium">Total Plays</h3>
@@ -84,16 +100,71 @@ export default function ArtistHomePage() {
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-500 dark:text-gray-400 font-medium">Followers</h3>
+            <h3 className="text-gray-500 dark:text-gray-400 font-medium">Albums</h3>
             <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg text-green-600 dark:text-green-400">
-              <Users className="w-5 h-5" />
+              <Disc className="w-5 h-5" />
             </div>
           </div>
           <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {placeholderFollowers.toLocaleString()}
+            {albums.length}
           </p>
         </div>
-      </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-gray-500 dark:text-gray-400 font-medium">Listen Time</h3>
+            <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-600 dark:text-orange-400">
+              <Clock className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            {formatListenTime(totalListenSeconds)}
+          </p>
+        </div>
+    </div>
+
+      {/* Most Popular Songs Section */}
+      {topSongs.length > 0 && (
+        <div className="pt-2">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+              Most Popular Songs
+            </h2>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700">
+            <div className="divide-y divide-gray-100 dark:divide-gray-700">
+              {topSongs.map((song, index) => (
+                <div key={song.id || song._id} className="p-4 flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <div className="flex-shrink-0 text-gray-400 font-bold w-6 text-center mr-2">
+                    {index + 1}
+                  </div>
+                  <div className="h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700 shadow-sm mr-4">
+                    <img src={song.cover} alt={song.title} className="h-full w-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                      {song.title}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      {song.album || song.artist}
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-6 mr-2">
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                      <Play className="w-4 h-4 mr-1 text-purple-500" />
+                      {song.plays?.toLocaleString() || 0}
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 w-16 justify-end">
+                      <Clock className="w-4 h-4 mr-1 text-orange-500" />
+                      {formatListenTime(song.totalListenSeconds || 0)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Recent Uploads Section */}
       <div className="pt-4">

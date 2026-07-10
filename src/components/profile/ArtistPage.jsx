@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
-import { api } from "../../utils/apiUtils"
+import { api, formatDurationFromMs } from "../../utils/apiUtils"
 import { PuffLoader } from 'react-spinners'
 import SongCard from "../songCard/SongCard.jsx"
-import { User, Music } from "lucide-react"
+import PlaylistCard from "../playlist/PlaylistCard.jsx"
+import { User, Music, Disc3 } from "lucide-react"
 
 export default function ArtistPage() {
   const { username } = useParams()
@@ -13,6 +14,7 @@ export default function ArtistPage() {
   
   const [artist, setArtist] = useState(null)
   const [audios, setAudios] = useState([])
+  const [albums, setAlbums] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -35,7 +37,7 @@ export default function ArtistPage() {
             album: apiSong.album || 'Unknown Album',
             coverImageUrl: apiSong.coverImageUrl || '/default-cover.png',
             audioUrl: apiSong.audioUrl,
-            duration: apiSong.duration || '0:00',
+            duration: formatDurationFromMs(apiSong.duration),
             durationSeconds: apiSong.durationSeconds || 0,
             genre: apiSong.genre,
             category: apiSong.category,
@@ -44,6 +46,7 @@ export default function ArtistPage() {
           }))
           
           setAudios(mappedAudios)
+          setAlbums(response.data.albums || [])
         } else {
           setError('Artist not found')
         }
@@ -125,12 +128,33 @@ export default function ArtistPage() {
                 <Music className="w-4 h-4" />
                 <span>{audios.length} {audios.length === 1 ? 'Track' : 'Tracks'} Uploaded</span>
               </div>
+              {albums.length > 0 && (
+                <div className="flex items-center space-x-1">
+                  <Disc3 className="w-4 h-4" />
+                  <span>{albums.length} {albums.length === 1 ? 'Album' : 'Albums'}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {albums.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Albums</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5 lg:gap-6">
+              {albums.map((album) => (
+                <PlaylistCard 
+                  key={album._id} 
+                  playlist={album}
+                  isAlbum={true}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Popular Releases</h2>
         
         {audios.length > 0 ? (

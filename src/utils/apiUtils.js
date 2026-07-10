@@ -55,6 +55,7 @@ export const transformApiSong = (apiSong) => {
     duration: formatDurationFromMs(apiSong.duration),
     durationRaw: apiSong.duration, // raw value (ms or seconds) for display
     plays: apiSong.listenTimes || 0,
+    totalListenSeconds: apiSong.totalListenSeconds || 0,
     cover: (() => {
       let coverPath = apiSong.coverImageUrl;
       if (!coverPath) return "https://placehold.co/200x200/EFEFEF/AAAAAA?text=Song+Cover";
@@ -220,7 +221,7 @@ export const fetchFavorites = async () => {
  */
 export const fetchPlaylists = async () => {
   try {
-    const response = await authApi.get(`/playlists/me?t=${Date.now()}`)
+    const response = await authApi.get(`/api/playlists/me?t=${Date.now()}`)
     return response.data?.playlists || [];
   } catch (error) {
     console.error('Error fetching public playlists:', error);
@@ -233,7 +234,7 @@ export const fetchPlaylists = async () => {
  */
 export const fetchPublicAlbumsAPI = async () => {
   try {
-    const response = await authApi.get(`/albums/public?t=${Date.now()}`)
+    const response = await authApi.get(`/api/albums/public?t=${Date.now()}`)
     return response.data?.albums || [];
   } catch (error) {
     console.error('Error fetching public albums:', error);
@@ -261,11 +262,23 @@ export const fetchSongById = async (songId) => {
  */
 export const incrementListenTimes = async (songId) => {
   try {
-    const response = await api.post(`/audios/${songId}/listen`)
+    const response = await api.post(`/audios/${songId}/listen`, { isNewPlay: true })
     return response.data
   } catch (error) {
     console.error(`Error incrementing listen times for ${songId}:`, error)
     // Non-critical, so don't throw
+  }
+}
+
+/**
+ * Report song listen duration progress
+ */
+export const reportListenProgress = async (songId, listenedSeconds) => {
+  try {
+    const response = await api.post(`/audios/${songId}/listen`, { listenedSeconds, isNewPlay: false })
+    return response.data
+  } catch (error) {
+    console.error(`Error reporting listen progress for ${songId}:`, error)
   }
 }
 

@@ -1,6 +1,6 @@
 // components/songCard/SongMenu.jsx (Complete Implementation)  
 import React from 'react'
-import { Plus, PlayCircle, Music, Trash2 } from 'lucide-react'
+import { Plus, PlayCircle, Music, Trash2, Edit2 } from 'lucide-react'
 
 export default function SongMenu({
     isAuthenticated,
@@ -67,6 +67,13 @@ export default function SongMenu({
             {isUploaded && (
                 <>
                     <hr className="my-1 border-gray-200 dark:border-gray-700" />
+                    <button
+                        onClick={(e) => onMenuOption("edit", e)}
+                        className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center space-x-2 text-gray-700 dark:text-gray-300"
+                    >
+                        <Edit2 className="w-3 h-3" />
+                        <span>Edit</span>
+                    </button>
                     <button
                         onClick={(e) => onMenuOption("delete", e)}
                         className="w-full text-left px-3 py-2 text-xs hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 transition-colors flex items-center space-x-2"

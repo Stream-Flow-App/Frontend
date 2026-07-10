@@ -1,6 +1,6 @@
 // components/songCard/SongCover.jsx
 import React from 'react'
-import { Play, Pause, Heart, Edit2, ListMusic } from 'lucide-react'
+import { Play, Pause, Heart, Edit2, ListMusic, Trash2 } from 'lucide-react'
 
 export default function SongCover({
     displayCover,
@@ -15,6 +15,7 @@ export default function SongCover({
     isAuthenticated,
     isFavorite,
     onEditClick,
+    onDeleteClick,
     onPlayPause,
     onFavorite,
     status
@@ -48,13 +49,20 @@ export default function SongCover({
 
             {/* Edit mode overlay */}
             {isEditMode && (
-                <div className="absolute inset-0 bg-black bg-opacity-40 rounded-md sm:rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                <div className="absolute inset-0 bg-black bg-opacity-40 rounded-md sm:rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3">
                     <button
                         onClick={onEditClick}
                         className="bg-purple-500 hover:bg-purple-600 text-white p-2 sm:p-2.5 rounded-full shadow-lg transition-colors"
                         title="Edit song"
                     >
                         <Edit2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                    </button>
+                    <button
+                        onClick={onDeleteClick}
+                        className="bg-red-500 hover:bg-red-600 text-white p-2 sm:p-2.5 rounded-full shadow-lg transition-colors"
+                        title="Delete song"
+                    >
+                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
                 </div>
             )}

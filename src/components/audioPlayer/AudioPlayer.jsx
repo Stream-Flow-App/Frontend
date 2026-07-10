@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useState, useRef } from 'react'
 import { useMusic } from '../../context/MusicContext'
 import { useAudioPlayer } from '../../hooks/audioHooks'
 // Removed unused formatTime import
 import { syncPlaybackState } from '../../utils/authUtils'
-import { incrementListenTimes } from '../../utils/apiUtils'
+import { incrementListenTimes, reportListenProgress } from '../../utils/apiUtils'
 import PlayerControls from './PlayerControls'
 import SeekBar from './SeekBar'
 import SongInfo from './SongInfo'
@@ -15,15 +15,34 @@ export default function AudioPlayer({ onToggleRightSidebar, isRightSidebarOpen }
   const { currentSong, isPlaying, volume, currentTime, duration, isShuffled, repeatMode, isSkipping } = state
 
   const audioPlayerRef = React.useRef(null)
-  const countedSongIdRef = React.useRef(null)
+  const countedSongIdRef = useRef(null)
+  const lastTimeRef = useRef(0)
+  const accumulatedSecondsRef = useRef(0)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
 
   // Handle audio events
   const handleTimeUpdate = useCallback((time, dur) => {
+    // Track duration listening progress
+    const delta = time - lastTimeRef.current
+    if (delta > 0 && delta < 2) {
+      accumulatedSecondsRef.current += delta
+      if (accumulatedSecondsRef.current >= 10) {
+        if (currentSong) {
+          const songId = currentSong._id || currentSong.id
+          reportListenProgress(songId, Math.floor(accumulatedSecondsRef.current))
+        }
+        accumulatedSecondsRef.current = 0
+      }
+    }
+    lastTimeRef.current = time
+
     dispatch({ type: 'SET_TIME', payload: time })
     if (dur && dur !== Infinity && !isNaN(dur)) {
       dispatch({ type: 'SET_DURATION', payload: dur })
     }
-  }, [dispatch])
+  }, [dispatch, currentSong])
 
   const handleEnded = useCallback(() => {
     console.log('🎵 Audio ended in player')
@@ -243,7 +262,14 @@ export default function AudioPlayer({ onToggleRightSidebar, isRightSidebarOpen }
     }
   }, [showVolumeSlider])
 
-  if (!currentSong) {
+  useEffect(() => {
+    if (currentSong) {
+      accumulatedSecondsRef.current = 0
+      lastTimeRef.current = 0
+    }
+  }, [currentSong])
+
+  if (!mounted || !currentSong) {
     return null
   }
 

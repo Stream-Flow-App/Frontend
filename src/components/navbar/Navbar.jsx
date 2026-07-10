@@ -35,12 +35,22 @@ const SearchDropdown = ({ isOpen, results, onClose, navigate, dispatch, isAuthen
       {results.albums.length > 0 && (
         <div className="mb-4">
           <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Albums</h3>
-          {results.albums.map(album => (
+          {results.albums.map(album => {
+            const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+            const displayCover = album.cover && album.cover !== "No Cover"
+                ? album.cover.startsWith('http') ? album.cover : `${API_BASE}${album.cover.startsWith('/') ? '' : '/'}${album.cover}`
+                : "https://placehold.co/200x200/EFEFEF/AAAAAA?text=Album+Cover";
+            return (
             <button key={album._id} onClick={() => { navigate(`/album/${album._id}`); onClose(); }} className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl flex items-center space-x-3 transition-colors">
-              <Disc className="w-8 h-8 text-purple-600" />
+              {album.cover && album.cover !== "No Cover" ? (
+                <img src={displayCover} className="w-8 h-8 rounded-md object-cover" alt="album cover" />
+              ) : (
+                <Disc className="w-8 h-8 text-purple-600" />
+              )}
               <span className="font-medium text-gray-900 dark:text-white">{album.name}</span>
             </button>
-          ))}
+            )
+          })}
         </div>
       )}
       
@@ -80,6 +90,7 @@ const SearchDropdown = ({ isOpen, results, onClose, navigate, dispatch, isAuthen
                 <div className="font-medium text-gray-900 dark:text-white truncate">{song.title}</div>
                 <div className="text-xs text-gray-500 truncate">{song.artist || song.singer}</div>
               </div>
+              {song.duration && <span className="text-xs font-medium text-gray-400 group-hover:text-gray-500 mr-2">{song.duration}</span>}
               <Play className="w-4 h-4 text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
             )
@@ -224,7 +235,8 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
       // Close mobile search if click is outside
       if (isMobileSearchOpen &&
         searchInputRef.current &&
-        !searchInputRef.current.contains(event.target)) {
+        !searchInputRef.current.contains(event.target) &&
+        (!dropdownRef.current || !dropdownRef.current.contains(event.target))) {
         closeMobileSearch()
       }
     }
@@ -710,16 +722,7 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
                             Profile
                           </button>
                         </Link>
-                        {(user?.role === 'admin' || user?.role === 'moderator') && (
-                          <Link to="/admin" onClick={() => setShowUserMenuDesktop(false)} >
-                            <button
-                              className="flex items-center px-4 py-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-xl mx-2 w-11/12 text-left text-purple-600 dark:text-purple-400"
-                            >
-                              <ShieldAlert className="w-4 h-4 mr-3" />
-                              Admin Dashboard
-                            </button>
-                          </Link>
-                        )}
+
                         <Link to="/settings" onClick={() => setShowUserMenuDesktop(false)} >
                           <button
                             className="flex items-center px-4 py-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-xl mx-2 w-11/12 text-left"

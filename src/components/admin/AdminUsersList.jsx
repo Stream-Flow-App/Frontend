@@ -1,10 +1,65 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchAdminUsers, updateAdminUserBan, updateAdminUserRole } from '../../utils/adminApiUtils';
-import { Shield, AlertTriangle, ShieldAlert, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Shield, AlertTriangle, ShieldAlert, Search, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { PuffLoader } from 'react-spinners';
 import { useToast } from '../common/Toast';
 
 import { useAuth } from '../../context/AuthContext';
+
+const CustomRoleSelect = ({ currentRole, onRoleChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const roles = [
+    { value: 'user', color: 'bg-blue-500' },
+    { value: 'moderator', color: 'bg-yellow-500' },
+    { value: 'admin', color: 'bg-red-500' }
+  ];
+
+  return (
+    <div className="relative inline-block" ref={dropdownRef}>
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors min-w-[120px]"
+      >
+        <div className="flex items-center gap-2">
+           <span className={`w-2 h-2 rounded-full ${roles.find(r => r.value === currentRole)?.color || 'bg-blue-500'}`}></span>
+           <span className="text-gray-900 dark:text-gray-300 capitalize">{currentRole}</span>
+        </div>
+        <ChevronDown size={14} className={`text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 mt-1 w-full rounded-lg bg-white dark:bg-gray-800 shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden py-1">
+          {roles.map((role) => (
+            <button
+              key={role.value}
+              onClick={() => {
+                onRoleChange(role.value);
+                setIsOpen(false);
+              }}
+              className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 ${currentRole === role.value ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300'}`}
+            >
+              <span className={`w-2 h-2 rounded-full ${role.color}`}></span>
+              <span className="capitalize">{role.value}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function AdminUsersList() {
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState([]);
@@ -142,7 +197,7 @@ export default function AdminUsersList() {
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 shadow-sm dark:shadow-none">
-        <table className="w-full text-left text-sm text-gray-700 dark:text-gray-300">
+        <table className="w-full text-left text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
           <thead className="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 font-medium">
             <tr>
               <th className="px-6 py-4">User</th>
@@ -181,15 +236,10 @@ export default function AdminUsersList() {
                 <td className="px-6 py-4">{user.email}</td>
                 <td className="px-6 py-4">
                   {currentUser?.role === 'admin' && user.role !== 'admin' ? (
-                    <select
-                      value={user.role}
-                      onChange={(e) => handleRoleChange(user.username, e.target.value)}
-                      className="bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-300 border border-gray-200 dark:border-gray-700 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2"
-                    >
-                      <option value="user">User</option>
-                      <option value="moderator">Moderator</option>
-                      <option value="admin">Admin</option>
-                    </select>
+                    <CustomRoleSelect 
+                      currentRole={user.role} 
+                      onRoleChange={(newRole) => handleRoleChange(user.username, newRole)} 
+                    />
                   ) : (
                     <span
                       className={`px-2 py-1 rounded-md text-xs font-medium ${

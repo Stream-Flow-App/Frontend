@@ -4,7 +4,8 @@ import { X, Upload, Music, CheckCircle, RefreshCw } from "lucide-react"
 import { useMusic } from "../../context/MusicContext"
 import { getAudioDuration } from "../../utils/audioUtils"
 
-import { uploadAudioAPI, updateAudioAPI, transformApiSong, parseDurationToMs } from "../../utils/apiUtils"
+import { uploadAudioAPI, updateAudioAPI, deleteAudioAPI, transformApiSong, parseDurationToMs } from "../../utils/apiUtils"
+import ConfirmModal from "../common/ConfirmModal"
 
 export default function UploadModal({ onClose, editSong = null }) {
   const { dispatch } = useMusic()
@@ -26,6 +27,9 @@ export default function UploadModal({ onClose, editSong = null }) {
 
   // New state for tracking if user wants to replace the audio file in edit mode
   const [replaceAudioFile, setReplaceAudioFile] = useState(false)
+  
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Check if we're in edit mode
   const isEditMode = editSong !== null
@@ -125,6 +129,20 @@ export default function UploadModal({ onClose, editSong = null }) {
   const handleCancelReplaceAudio = () => {
     setReplaceAudioFile(false)
     setSelectedFile(null)
+  }
+
+  const handleDelete = async () => {
+    if (!editSong || !editSong.id) return
+    setIsDeleting(true)
+    try {
+      await deleteAudioAPI(editSong.id)
+      window.dispatchEvent(new CustomEvent('songUploaded'))
+      onClose()
+    } catch (error) {
+      console.error('Failed to delete song', error)
+      setIsDeleting(false)
+      setShowDeleteConfirm(false)
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -432,24 +450,48 @@ export default function UploadModal({ onClose, editSong = null }) {
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={
-              !formData.title ||
-              !formData.artist ||
-              (!isEditMode && !selectedFile) ||
-              (isEditMode && replaceAudioFile && !selectedFile) ||
-              isUploading
-            }
-            className="btn-primary w-full py-3 rounded-lg text-sm sm:text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isUploading
-              ? (isEditMode ? "Updating..." : "Uploading...")
-              : (isEditMode ? "Save Changes" : "Upload Song")
-            }
-          </button>
+          <div className={`grid gap-3 ${isEditMode ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
+            {isEditMode && (
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isUploading || isDeleting}
+                className="btn-ghost text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 w-full py-3 rounded-lg text-sm sm:text-base font-medium disabled:opacity-50"
+              >
+                Delete Song
+              </button>
+            )}
+            <button
+              type="submit"
+              disabled={
+                !formData.title ||
+                !formData.artist ||
+                (!isEditMode && !selectedFile) ||
+                (isEditMode && replaceAudioFile && !selectedFile) ||
+                isUploading ||
+                isDeleting
+              }
+              className={`btn-primary w-full py-3 rounded-lg text-sm sm:text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed ${!isEditMode && 'col-span-full'}`}
+            >
+              {isUploading
+                ? (isEditMode ? "Updating..." : "Uploading...")
+                : (isEditMode ? "Save Changes" : "Upload Song")
+              }
+            </button>
+          </div>
         </form>
       </div>
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="Delete Song"
+        message={`Are you sure you want to delete "${formData.title}"? This action cannot be undone.`}
+        confirmText="Delete"
+        isDangerous={true}
+        isLoading={isDeleting}
+      />
     </div>,
     document.body
   )

@@ -348,7 +348,7 @@ export default function PlaylistPage() {
             {playlist.isPublic && (
               <button
                 onClick={handleShare}
-                className="btn-ghost flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl hover:text-blue-600 dark:hover:text-blue-400 text-sm"
+                className="flex items-center space-x-2 px-5 py-2 rounded-full text-sm font-semibold bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 shadow hover:shadow-md transition-all hover:text-blue-600 dark:hover:text-blue-400"
                 title="Share playlist"
               >
                 {copied ? <Check className="w-4 h-4 text-green-500" /> : <Share2 className="w-4 h-4" />}
@@ -360,7 +360,7 @@ export default function PlaylistPage() {
               <>
                 <button
                   onClick={() => setShowEditModal(true)}
-                  className="btn-ghost flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl hover:text-purple-600 dark:hover:text-purple-400 text-sm"
+                  className="flex items-center space-x-2 px-5 py-2 rounded-full text-sm font-semibold bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 shadow hover:shadow-md transition-all"
                   title="Edit playlist"
                 >
                   <Edit2 className="w-4 h-4" />
@@ -368,7 +368,7 @@ export default function PlaylistPage() {
                 </button>
                 <button
                   onClick={handleDeleteClick}
-                  className="btn-ghost flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl hover:text-red-600 dark:hover:text-red-400 text-sm"
+                  className="flex items-center space-x-2 px-5 py-2 rounded-full text-sm font-semibold bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 shadow hover:shadow-md transition-all hover:text-red-600 dark:hover:text-red-400"
                   title="Delete playlist"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -381,11 +381,7 @@ export default function PlaylistPage() {
               <button
                 onClick={handleClonePlaylist}
                 disabled={isCloning}
-                className={`btn-ghost flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-sm disabled:opacity-50 ${
-                  isSaved 
-                    ? "text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30" 
-                    : "hover:text-purple-600 dark:hover:text-purple-400"
-                }`}
+                className={`flex items-center space-x-2 px-5 py-2 rounded-full text-sm font-semibold bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow hover:shadow-md transition-all disabled:opacity-50 ${isSaved ? 'text-purple-600 dark:text-purple-400' : 'text-gray-700 dark:text-gray-200'}`}
                 title={isSaved ? "Remove from Library" : "Save to Library"}
               >
                 {isSaved ? (

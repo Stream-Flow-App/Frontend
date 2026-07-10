@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { X, Music, Upload, CheckCircle, Loader2, Search } from 'lucide-react';
-import { api, uploadAudioAPI, fetchMyUploads } from '../../utils/apiUtils';
 import { authApi } from '../../utils/authUtils';
 import { useToast } from '../common/Toast';
 
 import { createPortal } from 'react-dom';
+import ConfirmModal from '../common/ConfirmModal';
+import { deleteAlbumAPI } from '../../utils/albumUtils';
 
 export default function EditAlbumModal({ onClose, editAlbum }) {
   const [formData, setFormData] = useState({ 
@@ -13,7 +14,7 @@ export default function EditAlbumModal({ onClose, editAlbum }) {
   });
   const [existingTracks, setExistingTracks] = useState(editAlbum?.audio || []);
   const [selectedExistingTrackIds, setSelectedExistingTrackIds] = useState(
-    editAlbum?.audio?.map(t => t._id || t.id) || []
+    (editAlbum?.audio || []).map(t => (t._id || t.id)?.toString()).filter(Boolean)
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,6 +23,9 @@ export default function EditAlbumModal({ onClose, editAlbum }) {
   const [coverPreview, setCoverPreview] = useState(editAlbum?.cover && editAlbum.cover !== 'No Cover' ? editAlbum.cover : null);
   const coverInputRef = React.useRef(null);
   const { showErrorToast, showSuccessToast } = useToast();
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     // For editing an album, we just show the tracks that are already in it.
@@ -36,8 +40,9 @@ export default function EditAlbumModal({ onClose, editAlbum }) {
   );
 
   const toggleExistingTrack = (id) => {
-    setSelectedExistingTrackIds(prev => 
-      prev.includes(id) ? prev.filter(tid => tid !== id) : [...prev, id]
+    const strId = id?.toString();
+    setSelectedExistingTrackIds(prev =>
+      prev.includes(strId) ? prev.filter(tid => tid !== strId) : [...prev, strId]
     );
   };
 
@@ -53,14 +58,7 @@ export default function EditAlbumModal({ onClose, editAlbum }) {
     }
   };
 
-  const getAudioDuration = (file) => {
-    return new Promise((resolve) => {
-      const audio = new Audio(URL.createObjectURL(file));
-      audio.onloadedmetadata = () => {
-        resolve(Math.round(audio.duration * 1000));
-      };
-    });
-  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -72,10 +70,8 @@ export default function EditAlbumModal({ onClose, editAlbum }) {
     }
 
     setIsSubmitting(true);
-    let allTrackIds = [...selectedExistingTrackIds];
-
     try {
-
+      let allTrackIds = selectedExistingTrackIds.map(id => id?.toString()).filter(Boolean);
 
       setStatusText('Updating album...');
       const data = new FormData();
@@ -92,20 +88,34 @@ export default function EditAlbumModal({ onClose, editAlbum }) {
          }
       }
 
-      const response = await authApi.put(`/api/albums/${editAlbum._id}`, data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await authApi.put(`/api/albums/${editAlbum._id}`, data);
 
       showSuccessToast("Album updated successfully!");
       // Dispatch an event to refresh the UI
       window.dispatchEvent(new CustomEvent('songUploaded'));
       onClose();
-    } catch (err) {
-      console.error(err);
-      showErrorToast(err.message || "Failed to create album.");
+    } catch (error) {
+      console.error(error);
+      showErrorToast(error.response?.data?.message || 'Failed to update album');
     } finally {
       setIsSubmitting(false);
       setStatusText('');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!editAlbum || !editAlbum._id) return;
+    setIsDeleting(true);
+    try {
+      await deleteAlbumAPI(editAlbum._id);
+      showSuccessToast('Album deleted successfully');
+      window.dispatchEvent(new CustomEvent('songUploaded'));
+      onClose();
+    } catch (error) {
+      console.error('Failed to delete album', error);
+      showErrorToast(error.response?.data?.message || 'Failed to delete album');
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -248,41 +258,64 @@ export default function EditAlbumModal({ onClose, editAlbum }) {
                 </div>
               )}
             </div>
-            
-            {/* 
-              We decided NOT to allow mass uploading directly inside this modal because 
-              the backend requires a Cover Image + Genre + Title for EVERY single track!
-              Building a multi-track upload UI with individual metadata forms is massive 
-              and clunky. Forcing artists to upload tracks, then group them is standard.
-            */}
           </form>
         </div>
 
-        <div className="p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50 flex justify-end space-x-4">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="px-6 py-2.5 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitting || (selectedExistingTrackIds.length === 0)}
-            className="px-8 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-xl transition-colors disabled:opacity-50 flex items-center space-x-2"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 size={18} className="animate-spin" />
-                <span>{statusText || 'Saving...'}</span>
-              </>
-            ) : (
-              <span>Save Changes</span>
+        <div className="p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50 flex justify-between items-center space-x-4">
+          <div>
+            {editAlbum && (
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isSubmitting || isDeleting}
+                className="text-red-600 hover:text-red-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                Delete Album
+              </button>
             )}
-          </button>
+          </div>
+          <div className="flex space-x-4">
+            <button
+              onClick={onClose}
+              disabled={isSubmitting || isDeleting}
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              Cancel
+            </button>
+            
+            <button
+              onClick={handleSubmit}
+              disabled={
+                !formData.name || 
+                selectedExistingTrackIds.length === 0 || 
+                isSubmitting ||
+                isDeleting
+              }
+              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>{statusText || 'Saving...'}</span>
+                </>
+              ) : (
+                <span>Save Changes</span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="Delete Album"
+        message={`Are you sure you want to delete the album "${formData.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        isDangerous={true}
+        isLoading={isDeleting}
+      />
     </div>,
     document.body
   );
