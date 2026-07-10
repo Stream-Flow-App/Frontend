@@ -149,6 +149,12 @@ export default function AlbumPage() {
 
   useEffect(() => { if (albumId) loadAlbum() }, [albumId, loadAlbum])
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('edit') === 'true') {
+      setShowEditModal(true);
+    }
+  }, []);
   const handlePlaySong = (song) => {
     if (!isAuthenticated) {
       window.dispatchEvent(new CustomEvent('auth:required'))
