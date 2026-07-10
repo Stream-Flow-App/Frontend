@@ -10,6 +10,7 @@ import AudioPlayer from '../audioPlayer/AudioPlayer'
 import MusicErrorBoundary from '../errorBoundary/MusicErrorBoundary'
 import { AudioPlayerSkeleton } from '../loading/LoadingStates'
 import PlaylistSelectionModal from '../modals/PlaylistSelectionModal'
+import { transformApiSong } from '../../utils/apiUtils'
 
 export default function Layout() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth()
@@ -24,7 +25,8 @@ export default function Layout() {
   // Load last playback state from user
   useEffect(() => {
     if (user?.lastPlayback?.songId && typeof user.lastPlayback.songId === 'object' && !state.currentSong) {
-      dispatch({ type: 'SET_CURRENT_SONG', payload: user.lastPlayback.songId })
+      const transformedSong = transformApiSong(user.lastPlayback.songId)
+      dispatch({ type: 'SET_CURRENT_SONG', payload: transformedSong })
       dispatch({ type: 'SET_TIME', payload: user.lastPlayback.currentTime || 0 })
       dispatch({ type: 'SET_PLAYING', payload: false })
     }

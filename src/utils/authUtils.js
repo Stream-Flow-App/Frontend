@@ -13,6 +13,9 @@ export const authApi = axios.create({
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
+    "Expires": "0",
   },
 });
 
@@ -475,7 +478,11 @@ export const updateProfile = async (profileData, profileImg = null) => {
       formData.append("profileImg", profileImg);
     }
 
-    const response = await authApi.put("/api/users/profile", formData);
+    const response = await authApi.put("/api/users/profile", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      }
+    });
 
     // The backend returns user data, update local storage
     if (response.data.user) {
