@@ -97,16 +97,25 @@ export default function Layout() {
           
           {/* Small Footer */}
           <footer className="w-full py-4 px-6 text-center text-xs text-gray-500 dark:text-gray-500 mt-auto opacity-70">
-            <p>
+            <p className="flex items-center justify-center gap-1 flex-wrap">
               &copy; {new Date().getFullYear()} StreamFlow. Built by{' '}
               <a href="https://github.com/Zack-River" target="_blank" rel="noreferrer" className="text-purple-500 hover:text-purple-600 dark:hover:text-purple-400 font-medium transition-colors">
-                Zack River
-              </a>.
+                Rivers
+              </a>
+              {' '}&amp;{' '}
+              <span className="flex items-center gap-1">
+                <a href="https://www.linkedin.com/in/ziadseleem" target="_blank" rel="noreferrer" className="text-purple-500 hover:text-purple-600 dark:hover:text-purple-400 font-medium transition-colors">
+                  Ziad Seleem
+                </a>
+                <a href="https://github.com/ziad328" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                  (GitHub)
+                </a>
+              </span>.
             </p>
             <p className="mt-1">
               Ideas or bugs?{' '}
-              <a href="https://github.com/Zack-River" target="_blank" rel="noreferrer" className="hover:text-gray-700 dark:hover:text-gray-300 underline transition-colors">
-                Report them here
+              <a href="https://github.com/Stream-Flow-App" target="_blank" rel="noreferrer" className="hover:text-gray-700 dark:hover:text-gray-300 underline transition-colors">
+                Visit the StreamFlow Org
               </a>.
             </p>
           </footer>
