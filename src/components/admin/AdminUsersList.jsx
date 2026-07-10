@@ -11,16 +11,17 @@ export default function AdminUsersList() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [activeTab, setActiveTab] = useState('users'); // 'users', 'artists', 'mods'
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
   const [banningUser, setBanningUser] = useState(null);
   const [banDuration, setBanDuration] = useState('24');
   const { showErrorToast, showSuccessToast } = useToast();
 
-  const loadUsers = useCallback(async (currentSearch, currentPage, isBackground = false) => {
+  const loadUsers = useCallback(async (currentSearch, currentPage, currentUserType, isBackground = false) => {
     try {
       if (!isBackground) setLoading(true);
-      const data = await fetchAdminUsers(currentSearch, currentPage, 10);
+      const data = await fetchAdminUsers(currentSearch, currentPage, 10, currentUserType);
       if (data.users) {
         setUsers(data.users);
         setTotalPages(data.totalPages);
@@ -40,11 +41,11 @@ export default function AdminUsersList() {
     const isInitial = users.length === 0 && search === '';
     
     const delayDebounceFn = setTimeout(() => {
-      loadUsers(search, page, !isInitial);
+      loadUsers(search, page, activeTab, !isInitial);
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [search, page, loadUsers]);
+  }, [search, page, activeTab, loadUsers]);
 
   // handleBan, handleRoleChange remain unchanged...
   const handleBan = async () => {
@@ -52,7 +53,7 @@ export default function AdminUsersList() {
     try {
       await updateAdminUserBan(banningUser.username, banDuration);
       showSuccessToast('User ban status updated');
-      loadUsers(search, page, true);
+      loadUsers(search, page, activeTab, true);
     } catch {
       showErrorToast('Failed to update ban status');
     } finally {
@@ -64,7 +65,7 @@ export default function AdminUsersList() {
     try {
       await updateAdminUserRole(username, newRole);
       showSuccessToast('User role updated');
-      loadUsers(search, page, true);
+      loadUsers(search, page, activeTab, true);
     } catch {
       showErrorToast('Failed to update role');
     }
@@ -81,25 +82,61 @@ export default function AdminUsersList() {
 
   return (
     <div className="animate-fade-in space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div className="flex items-center gap-3">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Manage Users</h2>
-          <span className="bg-purple-600/20 text-purple-400 px-3 py-1 rounded-full text-sm font-medium border border-purple-500/20">
-            {totalUsers || users.length} Users Total
-          </span>
+      <div className="flex flex-col gap-6 mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Manage Users</h2>
+            <span className="bg-purple-600/20 text-purple-400 px-3 py-1 rounded-full text-sm font-medium border border-purple-500/20">
+              {totalUsers || users.length} Users
+            </span>
+          </div>
+          <div className="relative w-full sm:w-64">
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1); // Reset to first page on new search
+              }}
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
+            />
+            <Search className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400" size={18} />
+          </div>
         </div>
-        <div className="relative w-full sm:w-64">
-          <input
-            type="text"
-            placeholder="Search users..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1); // Reset to first page on new search
-            }}
-            className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
-          />
-          <Search className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400" size={18} />
+
+        {/* Tabs */}
+        <div className="flex space-x-2 border-b border-gray-200 dark:border-gray-800">
+          <button
+            onClick={() => { setActiveTab('users'); setPage(1); setUsers([]); }}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'users'
+                ? 'border-purple-500 text-purple-600 dark:text-purple-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            Normal Users
+          </button>
+          <button
+            onClick={() => { setActiveTab('artists'); setPage(1); setUsers([]); }}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'artists'
+                ? 'border-purple-500 text-purple-600 dark:text-purple-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            Artists
+          </button>
+          <button
+            onClick={() => { setActiveTab('mods'); setPage(1); setUsers([]); }}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'mods'
+                ? 'border-purple-500 text-purple-600 dark:text-purple-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            Mods & Admins
+          </button>
         </div>
       </div>
 

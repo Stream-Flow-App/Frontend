@@ -1,8 +1,8 @@
 import { authApi } from './authUtils';
 
-export const fetchAdminUsers = async (search = '', page = 1, limit = 10) => {
+export const fetchAdminUsers = async (search = '', page = 1, limit = 10, userType = 'users') => {
   try {
-    const params = new URLSearchParams({ search, page, limit });
+    const params = new URLSearchParams({ search, page, limit, userType });
     const response = await authApi.get(`/api/admin/users?${params.toString()}`);
     return response.data;
   } catch (error) {
