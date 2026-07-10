@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { Library, Plus, Heart, X, Upload, ListMusic, ShieldAlert } from "lucide-react"
 import UploadModal from "../uploads/UploadModal"
+import CreateAlbumModal from "../uploads/CreateAlbumModal"
 import { useMusic } from "../../context/MusicContext"
 import { useAuth } from "../../context/AuthContext"
 
@@ -131,6 +132,7 @@ const CreatePlaylistModal = ({ isOpen, onClose, onCreatePlaylist }) => {
 
 export default function ArtistSidebar({ isOpen, onClose }) {
   const [showUploadModal, setShowUploadModal] = useState(false)
+  const [showCreateAlbumModal, setShowCreateAlbumModal] = useState(false)
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false)
   const [sidebarWidth, setSidebarWidth] = useState(320) // Default width
   const [isResizing, setIsResizing] = useState(false)
@@ -340,9 +342,8 @@ export default function ArtistSidebar({ isOpen, onClose }) {
 
           <hr className="border-gray-200/50 dark:border-gray-700/50 flex-shrink-0" />
 
-          {/* MOBILE: Upload Button with enhanced styling */}
-          <div className="my-4 sm:my-6 flex-shrink-0 relative">
-            {/* Wrapper for the Upload Button animation */}
+          {/* MOBILE: Upload Buttons with enhanced styling */}
+          <div className="my-4 sm:my-6 flex-shrink-0 flex flex-col space-y-3">
             <div className="uploadButton rounded-xl p-0.5">
               <button
                 onClick={handleUploadClick}
@@ -352,6 +353,18 @@ export default function ArtistSidebar({ isOpen, onClose }) {
               >
                 <Upload className="w-5 h-5" />
                 <span className="text-sm sm:text-base">Upload Song</span>
+              </button>
+            </div>
+            
+            <div className="rounded-xl p-0.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30">
+              <button
+                onClick={() => setShowCreateAlbumModal(true)}
+                className="w-full text-purple-600 dark:text-purple-400 bg-white/50 dark:bg-gray-900/50 hover:bg-white dark:hover:bg-gray-900 
+                font-medium py-3 px-4 sm:px-6 rounded-xl transition-all duration-200
+                min-h-[48px] flex items-center justify-center space-x-3"
+              >
+                <ListMusic className="w-5 h-5" />
+                <span className="text-sm sm:text-base">Create Album</span>
               </button>
             </div>
           </div>
@@ -365,6 +378,9 @@ export default function ArtistSidebar({ isOpen, onClose }) {
 
       {/* Upload Modal */}
       {showUploadModal && <UploadModal onClose={() => setShowUploadModal(false)} />}
+
+      {/* Create Album Modal */}
+      {showCreateAlbumModal && <CreateAlbumModal onClose={() => setShowCreateAlbumModal(false)} />}
 
       {/* Create Playlist Modal */}
       <CreatePlaylistModal

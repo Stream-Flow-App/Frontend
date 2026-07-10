@@ -68,11 +68,6 @@ export default function RightSidebar({ isOpen, onClose }) {
                   alt={currentSong.title}
                   className="w-full aspect-square object-cover rounded-2xl shadow-lg max-w-sm mx-auto lg:max-w-none"
                 />
-                {currentSong.isUploaded && (
-                  <div className="absolute top-3 left-3 lg:top-4 lg:left-4 bg-green-500 text-white text-xs px-2 py-1 lg:px-3 lg:py-1 rounded-full font-medium">
-                    Uploaded
-                  </div>
-                )}
               </div>
 
               {/* Song Details */}
@@ -133,12 +128,6 @@ export default function RightSidebar({ isOpen, onClose }) {
                     <span className="text-gray-600 dark:text-gray-400">Quality</span>
                     <span>High</span>
                   </div>
-                  {currentSong.isUploaded && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Source</span>
-                      <span className="text-green-600 dark:text-green-400">Your Upload</span>
-                    </div>
-                  )}
                 </div>
               </div>
 

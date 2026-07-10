@@ -136,7 +136,7 @@ const router = createBrowserRouter([
         ) 
       },
       { 
-        path: 'album/:albumName', 
+        path: 'album/:albumId', 
         element: (
           <MusicErrorBoundary fallbackMessage="There was an issue loading this album">
             <AlbumPage />

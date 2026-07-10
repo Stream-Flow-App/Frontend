@@ -12,7 +12,8 @@ import {
   fetchSongsWithRetry,
   getUniqueGenres,
   getUniqueArtists,
-  fetchPublicPlaylistsAPI
+  fetchPublicPlaylistsAPI,
+  fetchPublicAlbumsAPI
 } from "../../utils/apiUtils.js"
 import HeroSection from "./HeroSection.jsx"
 import AuthenticationModals from "../authentication/AuthenticationModals.jsx"
@@ -112,6 +113,8 @@ const ImageCardsScroll = ({ items, selected, onSelect, type }) => {
 
 export default function HomePage() {
   const [songs, setSongs] = useState([])
+  const [publicPlaylists, setPublicPlaylists] = useState([])
+  const [publicAlbums, setPublicAlbums] = useState([])
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const [loading, setLoading] = useState(true)
@@ -124,7 +127,6 @@ export default function HomePage() {
   const [selectedArtist, setSelectedArtist] = useState('all')
   const [availableArtists, setAvailableArtists] = useState([{name: 'all', image: ''}])
   
-  const [publicPlaylists, setPublicPlaylists] = useState([])
   const { ref: playlistsScrollRef } = useDragScroll()
 
   // Authentication modal state
@@ -171,6 +173,9 @@ export default function HomePage() {
       
       const pPlaylists = await fetchPublicPlaylistsAPI();
       setPublicPlaylists(pPlaylists);
+      
+      const pAlbums = await fetchPublicAlbumsAPI();
+      setPublicAlbums(pAlbums);
       
     } catch (err) {
       console.error(err);
@@ -330,6 +335,24 @@ export default function HomePage() {
             </div>
           )}
 
+          {/* Public Albums Section */}
+          {publicAlbums && publicAlbums.length > 0 && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl sm:text-2xl font-bold">Featured Albums</h2>
+                <Link to="/browse?tab=albums" className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline">
+                  See All
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
+                {publicAlbums.slice(0, 5).map(album => (
+                  <PlaylistCard key={album._id || album.id} playlist={album} isAlbum={true} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Public Playlists Section */}
           {publicPlaylists.length > 0 && (
             <div className="mb-8">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 px-2 flex items-center justify-between">

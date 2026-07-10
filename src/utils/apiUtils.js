@@ -229,6 +229,19 @@ export const fetchPlaylists = async () => {
 };
 
 /**
+ * Fetch all public albums
+ */
+export const fetchPublicAlbumsAPI = async () => {
+  try {
+    const response = await authApi.get(`/albums/public?t=${Date.now()}`)
+    return response.data?.albums || [];
+  } catch (error) {
+    console.error('Error fetching public albums:', error);
+    return [];
+  }
+};
+
+/**
  * Fetch a specific song by ID
  */
 export const fetchSongById = async (songId) => {

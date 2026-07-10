@@ -98,6 +98,14 @@ export const useAudioPlayer = (currentSong, volume, onTimeUpdate, onEnded, onErr
         }
     }, []) // Empty deps — attach once, refs handle the latest callbacks
 
+    // Update volume separately to avoid re-triggering song load
+    useEffect(() => {
+        const audio = audioRef.current
+        if (audio) {
+            audio.volume = volume
+        }
+    }, [volume])
+
     // Load new song
     useEffect(() => {
         const audio = audioRef.current
@@ -110,14 +118,20 @@ export const useAudioPlayer = (currentSong, volume, onTimeUpdate, onEnded, onErr
             const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
             audioUrl = `${apiBase}${audioUrl}`
         }
+        
         if (audio.src !== audioUrl) {
             setIsLoaded(false)
             setIsBuffering(true)
             audio.src = audioUrl
             audio.load()
-            audio.volume = volume
+        } else {
+            // Same URL but currentSong reference changed (e.g. queue looped back to the same song).
+            // We must reset the time to 0 to replay it.
+            if (audio.currentTime > 0) {
+                audio.currentTime = 0
+            }
         }
-    }, [currentSong, volume])
+    }, [currentSong])
 
     // Control functions
     const play = useCallback(async () => {

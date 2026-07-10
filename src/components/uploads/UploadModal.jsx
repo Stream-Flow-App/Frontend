@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { X, Upload, Music, CheckCircle, RefreshCw } from "lucide-react"
 import { useMusic } from "../../context/MusicContext"
 import { getAudioDuration } from "../../utils/audioUtils"
@@ -15,7 +16,7 @@ export default function UploadModal({ onClose, editSong = null }) {
   const [formData, setFormData] = useState({
     title: "",
     artist: "",
-    album: "",
+    genre: "",
   })
   const fileInputRef = useRef(null)
   // Cover image states
@@ -37,7 +38,7 @@ export default function UploadModal({ onClose, editSong = null }) {
       setFormData({
         title: editSong.title || "",
         artist: editSong.artist || "",
-        album: editSong.album || "",
+        genre: editSong.genre || "",
       })
       setCoverPreview(editSong.cover || null)
     }
@@ -144,7 +145,7 @@ export default function UploadModal({ onClose, editSong = null }) {
       
       // Basic Metadata
       data.append("title", formData.title)
-      data.append("genre", formData.album || "Unknown Genre") // Frontend uses 'album', backend uses 'genre'
+      data.append("genre", formData.genre || "Unknown Genre")
       data.append("singer", formData.artist || "Unknown Artist")
       data.append("duration", durationMs)
       data.append("isPrivate", "false") // Defaulting to public
@@ -194,7 +195,7 @@ export default function UploadModal({ onClose, editSong = null }) {
   }
 
   if (uploadSuccess) {
-    return (
+    return createPortal(
       <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-3 sm:p-4">
         <div
           className={`card rounded-xl sm:rounded-2xl p-6 sm:p-8 max-w-xs sm:max-w-sm w-full shadow-2xl text-center transform transition-all duration-300 ${isVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
@@ -211,18 +212,14 @@ export default function UploadModal({ onClose, editSong = null }) {
             }
           </p>
         </div>
-      </div>
+      </div>,
+      document.body
     )
   }
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 bg-black bg-opacity-60 flex items-start justify-center z-[60] p-3 sm:p-4 overflow-y-auto"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          handleClose()
-        }
-      }}
     >
       <div
         className={`bg-white dark:bg-gray-800 card rounded-xl sm:rounded-2xl w-full max-w-sm sm:max-w-md shadow-2xl mt-4 sm:mt-8 transform transition-all duration-300 ${isVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
@@ -338,6 +335,9 @@ export default function UploadModal({ onClose, editSong = null }) {
                         type="button"
                         onClick={() => {
                           setSelectedFile(null)
+                          if (fileInputRef.current) {
+                            fileInputRef.current.value = ""
+                          }
                           if (isEditMode) {
                             setReplaceAudioFile(false)
                           } else {
@@ -420,12 +420,13 @@ export default function UploadModal({ onClose, editSong = null }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Album</label>
+              <label className="block text-sm font-medium mb-2">Genre</label>
               <input
                 type="text"
-                value={formData.album}
-                onChange={(e) => setFormData((prev) => ({ ...prev, album: e.target.value }))}
-                className="input-primary w-full px-3 py-2.5 sm:py-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm dark:text-white placeholder-gray-400 "
+                value={formData.genre}
+                onChange={(e) => setFormData((prev) => ({ ...prev, genre: e.target.value }))}
+                className="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="e.g., Pop, Hip Hop, Electronic"
                 disabled={isUploading}
               />
             </div>
@@ -449,6 +450,7 @@ export default function UploadModal({ onClose, editSong = null }) {
           </button>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

@@ -36,9 +36,9 @@ const SearchDropdown = ({ isOpen, results, onClose, navigate, dispatch, isAuthen
         <div className="mb-4">
           <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Albums</h3>
           {results.albums.map(album => (
-            <button key={album} onClick={() => { navigate(`/album/${album}`); onClose(); }} className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl flex items-center space-x-3 transition-colors">
+            <button key={album._id} onClick={() => { navigate(`/album/${album._id}`); onClose(); }} className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl flex items-center space-x-3 transition-colors">
               <Disc className="w-8 h-8 text-purple-600" />
-              <span className="font-medium text-gray-900 dark:text-white">{album}</span>
+              <span className="font-medium text-gray-900 dark:text-white">{album.name}</span>
             </button>
           ))}
         </div>
@@ -159,12 +159,11 @@ export default function Navbar({ onMenuClick, onSearch, searchQuery, authLoading
       if (onSearch) onSearch(query)
       try {
         const results = await searchSongs(query, { limit: 5 })
-        const albums = Array.from(new Set(results.songs.map(s => s.album).filter(Boolean))).slice(0, 3)
         setSearchResults({
           songs: results.songs.slice(0, 5),
           playlists: results.playlists.slice(0, 3),
           users: results.users.slice(0, 3),
-          albums: albums
+          albums: results.albums.slice(0, 3)
         })
         setIsDropdownOpen(true)
       } catch (err) {

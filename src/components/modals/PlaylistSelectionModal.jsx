@@ -60,9 +60,6 @@ export default function PlaylistSelectionModal() {
   return (
     <div
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-[70] p-4"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) handleClose()
-      }}
     >
       <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden transform transition-all duration-300">
         <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">

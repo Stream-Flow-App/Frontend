@@ -16,18 +16,14 @@ export default function SongCover({
     isFavorite,
     onEditClick,
     onPlayPause,
-    onFavorite
+    onFavorite,
+    status
 }) {
     return (
         <div className="relative mb-2 sm:mb-3">
             {/* Status badges */}
             <div className="absolute top-1 sm:top-2 left-1 sm:left-2 flex flex-col gap-1 z-10">
-                {isUploaded && (
-                    <div className="bg-green-500 text-white text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 rounded-full font-medium">
-                        Uploaded
-                    </div>
-                )}
-                {displayGenre && !isUploaded && (
+                {displayGenre && (
                     <div className="bg-purple-500 text-white text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 rounded-full font-medium">
                         {displayGenre}
                     </div>
@@ -100,6 +96,15 @@ export default function SongCover({
                 >
                     <Heart className={`w-2 h-2 sm:w-2.5 sm:h-2.5 ${isFavorite && isAuthenticated ? "fill-current" : ""}`} />
                 </button>
+            )}
+            {/* Status Badge — only shown on the artist's own uploads page */}
+            {isUploaded && status && (
+                <div className={`absolute bottom-1 sm:bottom-2 left-1 sm:left-2 px-1.5 py-0.5 rounded-sm shadow-md text-[9px] sm:text-[10px] font-bold text-white z-10 ${
+                    status === 'approved' ? 'bg-emerald-500' :
+                    status === 'rejected' ? 'bg-red-600' : 'bg-yellow-500 text-yellow-900'
+                }`}>
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                </div>
             )}
         </div>
     )

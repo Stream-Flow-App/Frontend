@@ -237,7 +237,6 @@ export default function AuthenticationModals({ isOpen, onClose, initialMode, onA
   return (
     <div
       className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-2 sm:p-4"
-      onClick={handleBackgroundClick}
     >
       <div
         className={`bg-white/95 dark:bg-gray-800/95 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 w-full max-w-sm mx-2 sm:max-w-md sm:mx-0 transform transition-all duration-300 ${

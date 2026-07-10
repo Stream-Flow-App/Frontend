@@ -22,9 +22,6 @@ export default function SongInfo({ currentSong, isFavorite, onFavorite }) {
                             e.target.src = "https://placehold.co/48x48/EFEFEF/AAAAAA?text=Cover"
                         }}
                     />
-                    {currentSong.isUploaded && (
-                        <div className="absolute -top-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
-                    )}
                 </div>
                 <div className="min-w-0 flex-1">
                     <h4 className="font-semibold text-xs sm:text-sm truncate" title={displayTitle}>

@@ -3,19 +3,22 @@ import { useParams, useNavigate } from "react-router-dom"
 import { PuffLoader } from 'react-spinners'
 import { Disc, Music, Save } from "lucide-react"
 import SongCard from "../songCard/SongCard.jsx"
-import { fetchSongsWithRetry } from "../../utils/apiUtils"
+
 import { useAuth } from "../../context/AuthContext"
 import { useMusic } from "../../context/MusicContext"
 import { useToast } from "../common/Toast"
 
+import * as albumUtils from "../../utils/albumUtils"
+
 export default function AlbumPage() {
-  const { albumName } = useParams()
+  const { albumId } = useParams()
   const navigate = useNavigate()
   
   const [songs, setSongs] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [artistName, setArtistName] = useState('Various Artists')
+  const [albumName, setAlbumName] = useState('Unknown Album')
   const [albumCover, setAlbumCover] = useState(null)
   const [isSaving, setIsSaving] = useState(false)
   
@@ -23,7 +26,7 @@ export default function AlbumPage() {
   const { createPlaylist, deletePlaylist, fetchPlaylists, state } = useMusic()
   const { showToast } = useToast()
 
-  const savedAlbumPlaylist = state.playlists?.find(p => p.name === albumName);
+  const savedAlbumPlaylist = state.playlists?.find(p => p.originalId === albumId || p._id === albumId || p.id === albumId);
   const isSaved = !!savedAlbumPlaylist;
 
   useEffect(() => {
@@ -32,43 +35,38 @@ export default function AlbumPage() {
         setLoading(true)
         setError(null)
         
-        const results = await fetchSongsWithRetry(3, 1000, { 
-          page: 1, 
-          limit: 100, 
-          genre: 'all', 
-          category: 'all', 
-          artist: 'all',
-          album: albumName 
-        })
+        const data = await albumUtils.fetchAlbumById(albumId)
         
-        if (results.songs && results.songs.length > 0) {
-          setSongs(results.songs)
+        if (data && data.success && data.album) {
+          const albumData = data.album
+          const tracks = albumData.audio || albumData.songs || []
+          setSongs(tracks)
+          setAlbumName(albumData.name || 'Unknown Album')
+          setAlbumDescription(albumData.description || 'No Description')
           
-          const artists = Array.from(new Set(results.songs.map(s => s.artist || s.singer).filter(Boolean)))
-          if (artists.length === 1) {
-            setArtistName(artists[0])
-          } else if (artists.length > 1) {
-            setArtistName('Various Artists')
+          if (albumData.cover && albumData.cover !== 'No Cover') {
+             setAlbumCover(albumData.cover)
+          } else if (tracks.length > 0 && (tracks[0].coverImage || tracks[0].coverUrl)) {
+            setAlbumCover(tracks[0].coverImage || tracks[0].coverUrl)
           }
           
-          if (results.songs[0].coverImage || results.songs[0].coverUrl) {
-            setAlbumCover(results.songs[0].coverImage || results.songs[0].coverUrl)
-          }
+          const artists = Array.from(new Set(tracks.map(s => s.artist || s.singer).filter(Boolean)))
+          setArtistName(artists.length > 0 ? artists.join(', ') : 'Unknown Artist')
         } else {
           setError('Album not found or has no tracks.')
         }
       } catch (err) {
         console.error(err)
-        setError(err.message || 'Failed to load album')
+        setError('Failed to load album tracks.')
       } finally {
         setLoading(false)
       }
     }
 
-    if (albumName) {
+    if (albumId) {
       fetchAlbumSongs()
     }
-  }, [albumName])
+  }, [albumId])
 
   const handleSaveAlbum = async () => {
     if (!isAuthenticated) {

@@ -1,20 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { fetchPendingAudios, updateAudioStatus, fetchPendingAlbums, updateAlbumStatus } from '../../utils/adminApiUtils';
-import { CheckCircle, XCircle, Clock, PlayCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, PlayCircle, Edit2 } from 'lucide-react';
 import { PuffLoader } from 'react-spinners';
 import { useToast } from '../common/Toast';
 import { useMusic } from '../../context/MusicContext';
+import UploadModal from '../uploads/UploadModal';
+import EditAlbumModal from '../uploads/EditAlbumModal';
 
 export default function AdminModerationTab() {
   const [pendingAudios, setPendingAudios] = useState([]);
   const [pendingAlbums, setPendingAlbums] = useState([]);
   const [view, setView] = useState('audio'); // 'audio' or 'album'
   const [loading, setLoading] = useState(true);
+  const [editingSong, setEditingSong] = useState(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [editingAlbum, setEditingAlbum] = useState(null);
+  const [showEditAlbumModal, setShowEditAlbumModal] = useState(false);
   const { showErrorToast, showSuccessToast } = useToast();
   const { playSong } = useMusic();
 
   useEffect(() => {
     loadPendingContent();
+
+    window.addEventListener('songUploaded', loadPendingContent);
+    return () => window.removeEventListener('songUploaded', loadPendingContent);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -52,6 +61,28 @@ export default function AdminModerationTab() {
     } catch {
       showErrorToast(`Failed to ${status} album`);
     }
+  };
+
+  const handleEditClick = (song) => {
+    setEditingSong(song);
+    setShowUploadModal(true);
+  };
+
+  const handleEditAlbumClick = (album) => {
+    setEditingAlbum(album);
+    setShowEditAlbumModal(true);
+  };
+
+  const handleUploadModalClose = () => {
+    setShowUploadModal(false);
+    setEditingSong(null);
+    loadPendingContent(); // Reload to get updated metadata
+  };
+
+  const handleEditAlbumClose = () => {
+    setShowEditAlbumModal(false);
+    setEditingAlbum(null);
+    loadPendingContent(); // Reload to get updated metadata
   };
 
   if (loading) {
@@ -131,14 +162,33 @@ export default function AdminModerationTab() {
               </div>
 
               <div className="flex items-center gap-3 flex-shrink-0">
-                {isAudioView && (
+                {isAudioView ? (
+                  <>
+                    <button
+                      onClick={() => handleEditClick(item)}
+                      className="p-2 rounded-lg bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 border border-purple-500/20 transition-colors flex items-center gap-2 text-sm font-medium"
+                      title="Edit Info"
+                    >
+                      <Edit2 size={18} />
+                      <span className="hidden sm:inline">Edit</span>
+                    </button>
+                    <button
+                      onClick={() => playSong({ id: item._id, ...item })}
+                      className="p-2 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 transition-colors flex items-center gap-2 text-sm font-medium"
+                      title="Listen"
+                    >
+                      <PlayCircle size={18} />
+                      <span className="hidden sm:inline">Listen</span>
+                    </button>
+                  </>
+                ) : (
                   <button
-                    onClick={() => playSong({ id: item._id, ...item })}
-                    className="p-2 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 transition-colors flex items-center gap-2 text-sm font-medium"
-                    title="Listen"
+                    onClick={() => handleEditAlbumClick(item)}
+                    className="p-2 rounded-lg bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 border border-purple-500/20 transition-colors flex items-center gap-2 text-sm font-medium"
+                    title="Edit Album"
                   >
-                    <PlayCircle size={18} />
-                    <span className="hidden sm:inline">Listen</span>
+                    <Edit2 size={18} />
+                    <span className="hidden sm:inline">Edit</span>
                   </button>
                 )}
                 <button
@@ -161,6 +211,20 @@ export default function AdminModerationTab() {
             </div>
           ))}
         </div>
+      )}
+
+      {showUploadModal && (
+        <UploadModal
+          onClose={handleUploadModalClose}
+          editSong={editingSong}
+        />
+      )}
+
+      {showEditAlbumModal && (
+        <EditAlbumModal
+          onClose={handleEditAlbumClose}
+          editAlbum={editingAlbum}
+        />
       )}
     </div>
   );

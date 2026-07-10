@@ -101,6 +101,7 @@ export default function SongCard({
           displayTitle={displayTitle}
           isUploaded={isUploaded}
           displayGenre={displayGenre}
+          status={song.status}
           isInQueue={isInQueue}
           isCurrentSong={isCurrentSong}
           isEditMode={isEditMode}
