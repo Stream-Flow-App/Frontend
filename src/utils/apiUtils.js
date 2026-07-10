@@ -9,13 +9,10 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000
 // Create axios instance with default config
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000, // 10 seconds timeout
+  timeout: 10000,
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
-    'Cache-Control': 'no-cache',
-    'Pragma': 'no-cache',
-    'Expires': '0',
   }
 })
 
@@ -185,7 +182,7 @@ export const fetchSongsWithRetry = async (maxRetries = 3, delay = 1000, params =
  */
 export const fetchMyUploads = async () => {
   try {
-    const response = await authApi.get('/audios/mine')
+    const response = await authApi.get(`/audios/mine?t=${Date.now()}`)
     const songsData = response.data?.audios || []
     
     const transformedSongs = transformApiSongs(songsData)
@@ -198,6 +195,38 @@ export const fetchMyUploads = async () => {
     throw error
   }
 }
+
+/**
+ * Fetch artist's own uploaded songs
+ */
+export const fetchFavorites = async () => {
+  try {
+    const response = await authApi.get(`/users/favorites?t=${Date.now()}`)
+    const songsData = response.data?.favorites || []
+    
+    const transformedSongs = transformApiSongs(songsData)
+    return {
+      songs: transformedSongs,
+      totalCount: response.data?.count || transformedSongs.length
+    }
+  } catch (error) {
+    console.error('Error fetching favorites:', error)
+    throw error
+  }
+};
+
+/**
+ * Fetch all public playlists
+ */
+export const fetchPlaylists = async () => {
+  try {
+    const response = await authApi.get(`/playlists/me?t=${Date.now()}`)
+    return response.data?.playlists || [];
+  } catch (error) {
+    console.error('Error fetching public playlists:', error);
+    return [];
+  }
+};
 
 /**
  * Fetch a specific song by ID

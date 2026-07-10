@@ -12,10 +12,6 @@ export const authApi = axios.create({
   withCredentials: true, // This is crucial for sending/receiving cookies
   headers: {
     Accept: "application/json",
-    "Content-Type": "application/json",
-    "Cache-Control": "no-cache",
-    "Pragma": "no-cache",
-    "Expires": "0",
   },
 });
 
@@ -478,11 +474,7 @@ export const updateProfile = async (profileData, profileImg = null) => {
       formData.append("profileImg", profileImg);
     }
 
-    const response = await authApi.put("/api/users/profile", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      }
-    });
+    const response = await authApi.put("/api/users/profile", formData);
 
     // The backend returns user data, update local storage
     if (response.data.user) {
